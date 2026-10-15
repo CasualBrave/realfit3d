@@ -13,4 +13,7 @@ dependencies = ["Flask>=3.0,<4"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-realfit3d = ["workers/contourcraft/*.py"]
+realfit3d = ["workers/*.py", "workers/contourcraft/*.py", "quality/*.py"]
+
+[project.scripts]
+realfit3d = "realfit3d.cli:main"

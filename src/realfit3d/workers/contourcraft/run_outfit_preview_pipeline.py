@@ -93,6 +93,10 @@ RETRY_DELAY_SECONDS = 5
 
 def run(cmd, **kwargs):
     env = {**os.environ, **kwargs.pop("extra_env", {})}
+    if (env.get('REALFIT3D_CC_ROOT') and len(cmd) > 1
+            and str(cmd[0]) == env.get('REALFIT3D_CC_PYTHON') and str(cmd[1]).endswith('.py')):
+        cmd = [cmd[0], str(SCRIPT_DIR.parent / 'runtime_entry.py'), '--kind', 'cc',
+               '--root', env['REALFIT3D_CC_ROOT'], '--script', str(cmd[1]), '--', *cmd[2:]]
     last_exc = None
     for attempt in range(1, RETRY_ATTEMPTS + 1):
         print("+ " + " ".join(str(c) for c in cmd))
@@ -183,7 +187,7 @@ def ensure_garment(args, garment_dir: Path, garment_name: str, source_gender: st
     if not relax_traj.exists():
         run([args.ccraft_python, str(SCRIPT_DIR / "relax_recovered_garment.py"),
              "--contourcraft-root", str(args.contourcraft_root),
-             "--data-root", str(args.contourcraft_root / "ccraft_data"),
+             "--data-root", os.environ.get('REALFIT3D_CC_DATA_ROOT', str(args.contourcraft_root / "ccraft_data")),
              "--body-model-root", str(args.body_model_root),
              "--garment-dict", str(garment_dict),
              "--checkpoint", str(args.checkpoint),
@@ -229,7 +233,7 @@ def ensure_outfit(args, staging_dir: Path, outfit_dir: Path) -> None:
 
     untangle_cmd = [args.ccraft_python, str(SCRIPT_DIR / "combine_garments_untangle.py"),
          "--contourcraft-root", str(args.contourcraft_root),
-         "--data-root", str(args.contourcraft_root / "ccraft_data"),
+         "--data-root", os.environ.get('REALFIT3D_CC_DATA_ROOT', str(args.contourcraft_root / "ccraft_data")),
          "--body-model-root", str(args.body_model_root),
          "--garment-dicts-dir", str(staging_dir),
          "--garment-names", *args.garment_names,

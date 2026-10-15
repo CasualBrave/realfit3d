@@ -1,5 +1,14 @@
 # 修改與遷移紀錄
 
+## 2026-10-15：第二階段整合
+
+- GG fork `8a52dc6648c587450aaf04cb7d560099d82116c0`：移入交接 lean／turntable，增加三個資料根目錄環境變數及 trajectory 基本契約檢查。官方基線未變；詳細差異見 fork 的 REALFIT3D_CHANGES.md。
+- 加入固定版 CC、ActorsHQ 與其 GS2Mesh；使用 runtime_entry.py 在子程序內更新 DEFAULTS，沒有直接修改這兩個官方 repo。
+- Web／CLI 共用 body／選衣驗證及試衣命令。CMU 路徑改用配置，pipeline 子程序也套用 CC runtime defaults；pipeline 中兩個 data-root 參數不再硬接 checkout/ccraft_data。其餘交接 worker 算法保留。
+- 新增各離線階段 dry-run／明確執行入口、GauGarConverter CLI bridge、doctor、資產存在性／SHA256 檢查。
+- 移入 8 個 backend result_optimization 工具，未改其算法或閾值。未自動把白名單接入上游 TSDF，未啟用實驗性 pose transfer。
+- 沒有進行 GPU 訓練、安裝 CUDA 堆疊或發布透明度控制。完整缺口與用法見 INTEGRATION_STATUS.md。
+
 ## 2026-10-15：初始化
 
 - 建立主專案來源與 submodule 連結。

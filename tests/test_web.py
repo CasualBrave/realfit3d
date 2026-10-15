@@ -120,7 +120,7 @@ class WebTests(unittest.TestCase):
         response.close()
 
     def test_command_preserves_order_and_explicit_paths(self):
-        keys = ['ccraft_python', 'gaugar_python', 'contourcraft_root', 'gaugar_root', 'body_model_root', 'checkpoint']
+        keys = ['ccraft_python', 'gaugar_python', 'contourcraft_root', 'gaugar_root', 'body_model_root', 'checkpoint', 'cmu_root']
         runtime = PreviewRuntime({key: str(self.root / key) for key in keys})
         body = dict(gender='female', height=1.7, weight=58, betas_path=self.root / 'betas.pkl')
         upper = dict(name='upper', source_gender='male')

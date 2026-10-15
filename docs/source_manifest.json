@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "repository": "https://github.com/CasualBrave/frontend_temp",
+      "commit": "2a643b1b43a0329dce23b7c40fbc2757bcfab968",
+      "files": [
+        {
+          "path": "ContourCraft/combine_garments_untangle.py",
+          "sha256": "0d3eb3fe6364148995e2768d1000bf1aa9d06cb96cd45aebe509a22d15ea60bc"
+        },
+        {
+          "path": "ContourCraft/contourcraft_fixed_size_upper.py",
+          "sha256": "045933553620ede5837acf1e53b358cb67913d778940d87e0628bd28d58325b4"
+        },
+        {
+          "path": "ContourCraft/convert_actorshq_smplx_to_gaugar.py",
+          "sha256": "fbc9019a12e9735439f99942be831e918ba3211bf596912d556d35996a24f7ab"
+        },
+        {
+          "path": "ContourCraft/fit_body_from_measurements_fast.py",
+          "sha256": "bf19e230582b5c48675d8761b462134c5b0c59ed30126ab4d9b6b3b212460e17"
+        },
+        {
+          "path": "ContourCraft/generate_garment_thumbnail_from_source.py",
+          "sha256": "1913435a484b57976c4369add86198a353b5a6e02734395af6669e1b51c4f2f0"
+        },
+        {
+          "path": "ContourCraft/import_official_gg_garment.py",
+          "sha256": "a86a125c1f48095c3f20d55ff70d12ad6c2a1a85a5c072cd3697652a6a2d667a"
+        },
+        {
+          "path": "ContourCraft/inspect_garment_dict.py",
+          "sha256": "63b679deef0734788f2de1ff083ecdc302a04a8f581811bfcab2ea26572d6f84"
+        },
+        {
+          "path": "ContourCraft/pin_garment_waistband.py",
+          "sha256": "09dbb9155fe09af9bfd91bb21a3d05001df85e8ba8f0e78a31d90e3706f86be3"
+        },
+        {
+          "path": "ContourCraft/preview_server.py",
+          "sha256": "e5b0ad3f90fe3bbf40b98da810674dd11124bc744be57805dc91c869e4466cd0"
+        },
+        {
+          "path": "ContourCraft/recover_resize_garment_bootstrap.py",
+          "sha256": "371baf4b25965ac0df844bbec3f9754823199b892ee358621ada0bee7309858e"
+        },
+        {
+          "path": "ContourCraft/relax_recovered_garment.py",
+          "sha256": "e6c9dc5acb655cec6d43676781b319eac10f7ec1abbbcbf723b7224fb829f7d4"
+        },
+        {
+          "path": "ContourCraft/render_body_preview.py",
+          "sha256": "0bfe1e30828d599e7aa6ec2c40e60e79a96ee6edf82b1b10f42fc2d212e86106"
+        },
+        {
+          "path": "ContourCraft/run_outfit_preview_pipeline.py",
+          "sha256": "1e5e9532e505428dae51a0ef576a123b1a0419ef2d76ff5114023bb4458a527d"
+        },
+        {
+          "path": "ContourCraft/simulate_recovered_outfit.py",
+          "sha256": "3d9fa5d65a2625b263c12229688ae1fbf8de052d8fee03929e9c3b18baf2a2d9"
+        },
+        {
+          "path": "ContourCraft/catalog_thumbnails/00170_lower.png",
+          "sha256": "0af485f4cd1eb726184d3aa836a853751901709aea60d615eda08f2077148fe8"
+        },
+        {
+          "path": "ContourCraft/catalog_thumbnails/00170_upper.png",
+          "sha256": "db4727720ca94eba8fb1f0a6f5b6ddeb2440410da71ff2b26bc3b21d17ff5925"
+        },
+        {
+          "path": "ContourCraft/catalog_thumbnails/00176_lower.png",
+          "sha256": "7983d2d28a27783ad70cb089aa33e135e800fdebcd658ef1608fc5d1b589c532"
+        },
+        {
+          "path": "ContourCraft/catalog_thumbnails/00176_upper.png",
+          "sha256": "d74b56ab6a26d6fe91330e2e6312b6fb8d58dd6b2fd889f52cfdce2e30fb9010"
+        },
+        {
+          "path": "ContourCraft/catalog_thumbnails/Actor05.png",
+          "sha256": "07d4d829093a14d98cb9b7c9f5c6f697e5703d2a7688f22042baaf2597bda5f3"
+        },
+        {
+          "path": "ContourCraft/catalog_thumbnails/Actor05_upper_stage3_clean.png",
+          "sha256": "3dd583b37c273e6a3461f14d115c0c7ec34984781734c5702bc71dff4bcb6839"
+        },
+        {
+          "path": "Gaussian-Garments/render_lean.py",
+          "sha256": "e0fb1aba693a4bead1ff51d01dafd02ede2b571160df0bfb4b71296bbb0a5ca1"
+        },
+        {
+          "path": "Gaussian-Garments/render_turntable.py",
+          "sha256": "033ef5cceb5f6266c8ceab2886281e72ece8c74bc3a5d10e13687eda70abf8e8"
+        }
+      ]
+    },
+    {
+      "repository": "https://github.com/CasualBrave/backend_temp",
+      "commit": "e5125ed3d0b4ad744f4581e83e6563f7b7152de7",
+      "files": [
+        {
+          "path": "result_optimization/audit_tsdf_views.py",
+          "sha256": "b5b9f48ee4ca5f1cb81498711841447a3b62761eb49a9616308f4df573dd9f7c"
+        },
+        {
+          "path": "result_optimization/curved_hem_candidates.py",
+          "sha256": "2e095062874517de1f00fa660e0a5b5135152a7e12179f57b9aa8a6d892dc083"
+        },
+        {
+          "path": "result_optimization/derive_view_camera_mapping.py",
+          "sha256": "ae81fa84d74b044c434c88bda288122e0849aa0982172029f3ddf8fcbf5b350f"
+        },
+        {
+          "path": "result_optimization/experimental_smplx_pose_transfer.py",
+          "sha256": "6e874bf4f7da6d996b7f798f9fbb49aa237f285cebc6e1f05d124d3cd89f678b"
+        },
+        {
+          "path": "result_optimization/install_reviewed_masks.py",
+          "sha256": "e6e1e21e0f1e73ad88083a8036112817413a7bca7d1f0a964d6f6e73904b504f"
+        },
+        {
+          "path": "result_optimization/pin_boundary_loop.py",
+          "sha256": "3a1a93fad77de202db15244ba42e94035633cb62094572e8241dcc8e7099309c"
+        },
+        {
+          "path": "result_optimization/prepare_stratified_finetune.py",
+          "sha256": "48c7830ffbf50e9f97577fbb7e9c2760c8bee4d11e508e28dcd940920e88edd6"
+        },
+        {
+          "path": "result_optimization/repair_mesh_boundaries.py",
+          "sha256": "e5b2d3035f017a8d9674cffc95edc77d52ec119d4283d29f717e5d8b04e8282c"
+        },
+        {
+          "path": "result_optimization/review_dino_sam2_masks.py",
+          "sha256": "7426518acf98a73c894216e9d7eff2c07f2c369bc75f5b68341a2ba09ab29ebc"
+        }
+      ]
+    }
+  ],
+  "note": "Source hashes, not installed-file hashes. Some listed sources are compared but not migrated; see INTEGRATION_STATUS.md. Modified pipeline and extracted Web files intentionally differ."
+}

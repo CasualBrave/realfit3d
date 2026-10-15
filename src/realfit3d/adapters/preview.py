@@ -5,7 +5,11 @@ import os
 import subprocess
 from pathlib import Path
 
+from realfit3d.settings import runtime_environment
+from realfit3d.assets import inspect_asset
+
 WORKERS = Path(__file__).resolve().parents[1] / "workers" / "contourcraft"
+ENTRY = WORKERS.parent / 'runtime_entry.py'
 
 
 class RuntimeUnavailable(RuntimeError):
@@ -20,12 +24,13 @@ class PreviewRuntime:
         value = self.settings.get(key)
         if not value:
             raise RuntimeUnavailable(f"GPU runtime is not configured: {key}")
-        return Path(value).expanduser().resolve()
+        path = Path(value).expanduser()
+        return path.absolute() if key.endswith('_python') else path.resolve()
 
     def check(self, full=False, motion=None):
-        keys = ["ccraft_python", "contourcraft_root", "body_model_root", "reference_motion"]
+        keys = ["ccraft_python", "contourcraft_root", "ccraft_data_root", "cmu_root", "body_model_root", "reference_motion"]
         if full:
-            keys += ["gaugar_python", "gaugar_root", "checkpoint"]
+            keys += ["gaugar_python", "gaugar_root", "checkpoint", "gg_data_root", "gg_output_root", "gg_aux_root"]
         for key in keys:
             path = self.path(key)
             if not path.exists():
@@ -35,9 +40,24 @@ class PreviewRuntime:
         if full:
             for filename in ["render_lean.py", "render_turntable.py", "inference.py"]:
                 if not (self.path("gaugar_root") / filename).is_file():
-                    raise RuntimeUnavailable(f"GG handoff runtime requires {filename}; see docs/WEB.md")
-            if motion and not (self.path("contourcraft_root") / motion).is_file():
+                    raise RuntimeUnavailable(f"GG fork requires {filename}; initialize the pinned submodule")
+            if motion and not self.motion_path(motion).is_file():
                 raise RuntimeUnavailable(f"Missing motion: {motion}")
+
+    def motion_path(self, motion):
+        relative = Path(motion)
+        if relative.is_absolute() or '..' in relative.parts:
+            raise RuntimeUnavailable('Motion must be a relative catalog path')
+        if relative.parts[:1] == ('CMU',):
+            return self.path('cmu_root').joinpath(*relative.parts[1:])
+        return self.path('cmu_root') / relative
+
+    def check_assets(self, names):
+        for name in names:
+            report = inspect_asset(self.path('gg_output_root'), name)
+            missing = [item['path'] for item in report['files'] if not item['exists']]
+            if missing:
+                raise RuntimeUnavailable('Missing garment render assets: ' + ', '.join(missing))
 
     def fit(self, directory, gender, height, weight):
         common = [str(self.path("ccraft_python"))]
@@ -53,8 +73,8 @@ class PreviewRuntime:
                       "--reference-motion", str(self.path("reference_motion"))],
         ]
         for command in commands:
-            subprocess.run(command, cwd=self.path("contourcraft_root"), check=True,
-                           capture_output=True, text=True)
+            subprocess.run(self.wrap_cc(command), cwd=self.path("contourcraft_root"), check=True,
+                           capture_output=True, text=True, env=self.environment())
         for name in ["betas.pkl", "body_preview.png"]:
             if not (directory / name).is_file():
                 raise RuntimeError(f"Worker did not produce {name}")
@@ -65,18 +85,25 @@ class PreviewRuntime:
                    "--source-genders", lower["source_gender"], upper["source_gender"],
                    "--gender", body["gender"], "--height", str(body["height"]),
                    "--weight", str(body["weight"]), "--precomputed-betas", str(body["betas_path"]),
-                   "--motion", str(self.path("contourcraft_root") / motion),
+                   "--motion", str(self.motion_path(motion)),
                    "--run-name", run_name, "--outfit-name", outfit, "--output-root", str(output),
                    "--pin-waistband-garments", lower["name"],
                    "--pin-waistband-if-snug-garments", lower["name"]]
         for key in ["contourcraft_root", "gaugar_root", "body_model_root", "checkpoint", "ccraft_python", "gaugar_python"]:
             command.extend(["--" + key.replace("_", "-"), str(self.path(key))])
-        return command
+        return self.wrap_cc(command)
+
+    def wrap_cc(self, command):
+        return [command[0], str(ENTRY), '--kind', 'cc', '--root', str(self.path('contourcraft_root')),
+                '--script', command[1], '--', *command[2:]]
+
+    def environment(self):
+        return runtime_environment(self.settings, self.path('ccraft_python'))
 
     def launch(self, command, log_path):
         with log_path.open("w") as log:
             return subprocess.Popen(command, cwd=self.path("contourcraft_root"), stdout=log,
-                                    stderr=subprocess.STDOUT)
+                                    stderr=subprocess.STDOUT, env=self.environment())
 
 
 def read_status(info):

@@ -5,10 +5,25 @@
       "name": "Gaussian-Garments",
       "path": "upstream/Gaussian-Garments",
       "repository": "https://github.com/CasualBrave/Gaussian-Garments.git",
-      "commit": "ceb66fc36598da05b3b3391f4562cdc54d2a2ed2",
+      "commit": "8a52dc6648c587450aaf04cb7d560099d82116c0",
       "upstream_repository": "https://github.com/eth-ait/Gaussian-Garments.git",
       "upstream_baseline": "ceb66fc36598da05b3b3391f4562cdc54d2a2ed2",
-      "role": "Team-maintained GG fork; currently identical to the upstream baseline"
+      "role": "Team-maintained GG fork: handoff renderers, environment roots, trajectory guards"
+    },
+    {
+      "name": "ContourCraft",
+      "path": "upstream/ContourCraft",
+      "repository": "https://github.com/Dolorousrtur/ContourCraft.git",
+      "commit": "d606432c2f7e96b05664e6a4ffb9d1cb98705baf",
+      "role": "Official handoff baseline; defaults configured per process by RealFit3D"
+    },
+    {
+      "name": "ActorsHQ-for-Gaussian-Garments",
+      "path": "upstream/ActorsHQ-for-Gaussian-Garments",
+      "repository": "https://github.com/hlimach/ActorsHQ-for-Gaussian-Garments.git",
+      "commit": "46651f55030407ea25463ed070eed9f7e837a9af",
+      "role": "Official ActorsHQ reconstruction baseline",
+      "nested_gs2mesh_commit": "b08a68f2b896301472d25fe3f5287b5b1bf1b737"
     }
   ]
 }

@@ -14,14 +14,20 @@ Web 環境只安裝 Flask，不 import torch、SMPL-X、Blender 或研究套件�
 
 - `ccraft_python`：已具備 ContourCraft、torch、SMPL-X 等依賴的環境。
 - `gaugar_python`：已具備 GG、Blender／渲染依賴的環境。
-- `contourcraft_root`：既有可運作的 ContourCraft checkout；目前尚未固定為本 repo submodule。
-- `gaugar_root`：已安裝交接版 `render_lean.py`、`render_turntable.py` 與其配套 `inference.py` 的 GG 部署目錄。**不能直接指定目前仍為官方基線的 submodule 就認為完整可跑。**
+- `contourcraft_root`：預設使用固定的 ContourCraft submodule；仍需建立其執行環境。
+- `gaugar_root`：使用固定的團隊 GG fork，現在已包含 `render_lean.py`、`render_turntable.py`。
+- `ccraft_data_root`、`cmu_root`：CC 資料根目錄與 CMU 動作目錄；catalog 的 `CMU/` 前綴會對應到 cmu_root，不再要求把資料放進程式 checkout。
+- `gg_data_root`、`gg_output_root`、`gg_aux_root`：GG 輸入、訓練資產、輔助模型目錄，與試衣結果的 output_root 不同。
 - `body_model_root`、`reference_motion`、`checkpoint`：有合法使用權的模型、參考動作與 CC 權重。
 - `output_root`：既有衣物資產／預熱快取與新結果的根目錄；catalog 的衣物 ID 必須與該目錄及 GG 資產對應。缺少官方訓練衣物時，須先按交接流程匯入，不能單靠目錄名稱產生。
 
-GG 部署差異來源：[frontend_temp/Gaussian-Garments 固定版本](https://github.com/CasualBrave/frontend_temp/tree/2a643b1b43a0329dce23b7c40fbc2757bcfab968/Gaussian-Garments)。本次未自動覆蓋 GG 或執行上游安裝。接下來應比較這些修改、遷入團隊 GG fork、驗證後更新 submodule，不長期依賴不明版本的外部部署。
+GG 部署差異來源：[frontend_temp/Gaussian-Garments 固定版本](https://github.com/CasualBrave/frontend_temp/tree/2a643b1b43a0329dce23b7c40fbc2757bcfab968/Gaussian-Garments)。渲染入口已遷入 fork；沒有整份覆蓋 inference.py，也未執行上游安裝。保留原始 inference 的預設烘焙行為，只有專用渲染入口使用交接加速版本。
+
+`runtime_entry.py` 在子程序啟動 CC／ActorsHQ 時設定其 DEFAULTS；不修改這兩個官方 checkout。GG fork 讀取 `REALFIT3D_GG_*` 環境變數。API 與 CLI 都透過相同設定傳遞這些值，並把專用 Python 所在目錄放到 PATH，讓上游內部的 `python` 子程序使用相同環境。
 
 檔案存在檢查只能及早拒絕缺少路徑，不能證明 CUDA、checkpoint、模型授權、資料相容性或推論品質已通過。`catalog.json` 是交接樣例，不代表資產與權重隨 repo 提供。
+
+選衣後會先檢查該衣物 `stage1/template_uv.obj`、`stage1/cameras.json`、`stage3/ckpt/net.pt`。這是實際 renderer 消費的位置，不會自動把任意 epoch 的權重移到 ckpt。fork 也會檢查 trajectory 的衣物名稱、UV 頂點總數和人體／衣物幀數；這些仍不是完整面索引／UV 語意驗證。
 
 ## API 與安全界線
 

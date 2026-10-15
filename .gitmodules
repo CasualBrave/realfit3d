@@ -1,3 +1,9 @@
 [submodule "upstream/Gaussian-Garments"]
 	path = upstream/Gaussian-Garments
 	url = https://github.com/CasualBrave/Gaussian-Garments.git
+[submodule "upstream/ContourCraft"]
+	path = upstream/ContourCraft
+	url = https://github.com/Dolorousrtur/ContourCraft.git
+[submodule "upstream/ActorsHQ-for-Gaussian-Garments"]
+	path = upstream/ActorsHQ-for-Gaussian-Garments
+	url = https://github.com/hlimach/ActorsHQ-for-Gaussian-Garments.git

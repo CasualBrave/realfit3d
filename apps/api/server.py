@@ -8,14 +8,15 @@ from uuid import uuid4
 from flask import Flask, abort, jsonify, render_template, request, send_from_directory
 
 from realfit3d.adapters.preview import PreviewRuntime, RuntimeUnavailable, read_status
+from realfit3d.settings import load_settings
+from realfit3d.contracts import body_parameters, select_outfit, outfit_name
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
 def create_app(settings=None, runtime=None):
     if settings is None:
-        config = os.environ.get("REALFIT3D_CONFIG")
-        settings = json.loads(Path(config).read_text()) if config else {}
+        settings = load_settings()
     app = Flask(__name__, template_folder=str(ROOT / "apps/web/templates"),
                 static_folder=str(ROOT / "apps/web/static"))
     app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
@@ -69,12 +70,10 @@ def create_app(settings=None, runtime=None):
     @app.post("/fit_body")
     def fit_body():
         try:
-            height, weight = float(request.form["height"]), float(request.form["weight"])
+            parameters = body_parameters(request.form['height'], request.form['weight'], request.form.get('gender', 'female'))
+            height, weight, gender = parameters['height'], parameters['weight'], parameters['gender']
         except (KeyError, ValueError):
             return "Invalid height or weight", 400
-        gender = request.form.get("gender", "female")
-        if not (1 <= height <= 2.2 and 25 <= weight <= 180) or gender not in {g["value"] for g in catalog["genders"]}:
-            return "Invalid body measurements or gender", 400
         if not state["lock"].acquire(blocking=False):
             return "GPU is busy", 409
         directory = output / "bodies" / uuid4().hex
@@ -123,21 +122,13 @@ def create_app(settings=None, runtime=None):
             body = state["body"]
             if body is None:
                 return "Create a body first", 400
-            upper = garments.get(request.form.get("upper"))
-            lower = garments.get(request.form.get("lower"))
-            if not upper or upper["slot"] != "upper" or not lower or lower["slot"] != "lower":
-                return "Select one upper and one lower garment", 400
             try:
-                index = int(request.form["motion"])
-                if not 0 <= index < len(catalog["motions"]):
-                    raise ValueError("Invalid motion index")
-                motion = catalog["motions"][index]["path"]
+                upper, lower, motion = select_outfit(catalog, request.form.get('upper'), request.form.get('lower'), request.form['motion'])
             except (KeyError, ValueError):
-                return "Invalid motion", 400
+                return "Invalid garment selection or motion", 400
             runtime.check(full=True, motion=motion)
-            outfit = lower["name"] + "+" + upper["name"]
-            if body["gender"] != "female":
-                outfit += "_" + body["gender"]
+            runtime.check_assets([lower['name'], upper['name']])
+            outfit = outfit_name(upper, lower, body['gender'])
             run_id = "web_" + uuid4().hex
             directory = output / "outfits" / outfit / "runs_preview" / run_id
             directory.parent.mkdir(parents=True, exist_ok=True)
