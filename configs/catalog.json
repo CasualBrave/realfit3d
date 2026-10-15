@@ -1,0 +1,78 @@
+{
+  "garments": [
+    {
+      "name": "00170_upper",
+      "label": "格紋毛衣背心 (00170)",
+      "slot": "upper",
+      "source_gender": "female",
+      "thumbnail": "00170_upper.png"
+    },
+    {
+      "name": "00170_lower",
+      "label": "百褶短裙 (00170)",
+      "slot": "lower",
+      "source_gender": "female",
+      "thumbnail": "00170_lower.png"
+    },
+    {
+      "name": "00176_upper",
+      "label": "襯衫 (00176)",
+      "slot": "upper",
+      "source_gender": "female",
+      "thumbnail": "00176_upper.png"
+    },
+    {
+      "name": "00176_lower",
+      "label": "牛仔褲 (00176)",
+      "slot": "lower",
+      "source_gender": "female",
+      "thumbnail": "00176_lower.png"
+    },
+    {
+      "name": "Actor05_upper_stage3_clean",
+      "label": "素色T恤 (Actor05)",
+      "slot": "upper",
+      "source_gender": "male",
+      "thumbnail": "Actor05_upper_stage3_clean.png"
+    },
+    {
+      "name": "Actor05",
+      "label": "工裝褲 (Actor05)",
+      "slot": "lower",
+      "source_gender": "male",
+      "thumbnail": "Actor05.png"
+    }
+  ],
+  "motions": [
+    {
+      "label": "走路 (01_01)",
+      "path": "CMU/01/01_01_stageii.npz"
+    },
+    {
+      "label": "走路-慢速 (108_01)",
+      "path": "CMU/108/108_01_stageii.npz"
+    },
+    {
+      "label": "走路-悠閒 (05_01)",
+      "path": "CMU/05/05_01_stageii.npz"
+    },
+    {
+      "label": "走路-正常 (07_01)",
+      "path": "CMU/07/07_01_stageii.npz"
+    },
+    {
+      "label": "走路-快速 (02_02)",
+      "path": "CMU/02/02_02_stageii.npz"
+    }
+  ],
+  "genders": [
+    {
+      "value": "female",
+      "label": "女性"
+    },
+    {
+      "value": "male",
+      "label": "男性"
+    }
+  ]
+}

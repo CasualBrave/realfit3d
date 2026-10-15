@@ -1,0 +1,59 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RealFit3D</title>
+<link rel="stylesheet" href="/static/app.css">
+<div id="page-body">
+  <h2>穿搭預覽 Demo</h2>
+  <p class="intro">先填一次身體資料，等一下不管試穿幾套衣服都會用同一個身體，不用每套都重填。</p>
+  <form id="body-form">
+    <label>性別</label>
+    <select name="gender">
+      {% for g in genders %}<option value="{{g.value}}">{{g.label}}</option>{% endfor %}
+    </select>
+    <label>身高 (m)</label>
+    <input type="number" step="0.01" name="height" value="1.70" min="1.0" max="2.2" required>
+    <label>體重 (kg)</label>
+    <input type="number" step="0.1" name="weight" value="58" min="25" max="180" required>
+    <button type="submit">建立我的身體模型</button>
+  </form>
+  <div id="body-status-msg"></div>
+  <div id="body-preview-area" hidden>
+    <img id="body-preview-img">
+    <div><button type="button" id="body-next-btn">下一步：選衣服</button></div>
+  </div>
+</div>
+<div id="page-outfit" hidden>
+<form id="f" class="layout">
+  <div class="col-garments">
+    <label>上身</label>
+    <div class="combo-grid">
+      {% for i, g in enumerate(uppers) %}
+      <label class="combo-card{{ ' selected' if i == 0 else '' }}">
+        <input type="radio" name="upper" value="{{g.name}}"{{ ' checked' if i == 0 else '' }}>
+        <img src="/garment_thumbnail/{{g.name}}" alt="{{g.label}}">
+      </label>
+      {% endfor %}
+    </div>
+    <label>下身</label>
+    <div class="combo-grid">
+      {% for i, g in enumerate(lowers) %}
+      <label class="combo-card{{ ' selected' if i == 0 else '' }}">
+        <input type="radio" name="lower" value="{{g.name}}"{{ ' checked' if i == 0 else '' }}>
+        <img src="/garment_thumbnail/{{g.name}}" alt="{{g.label}}">
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="col-params">
+    <label>動作</label>
+    <select name="motion">
+      {% for i, m in enumerate(motions) %}<option value="{{i}}">{{m.label}}</option>{% endfor %}
+    </select>
+    <button type="submit">生成</button>
+    <button type="button" id="change-body-btn">換人（重新填身體資料）</button>
+  </div>
+  <div class="col-result"><h2>穿搭預覽 Demo</h2><div id="result"></div></div>
+</form>
+</div>
+<script src="/static/app.js" defer></script>

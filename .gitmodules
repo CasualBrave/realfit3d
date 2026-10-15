@@ -1,0 +1,3 @@
+[submodule "upstream/Gaussian-Garments"]
+	path = upstream/Gaussian-Garments
+	url = https://github.com/CasualBrave/Gaussian-Garments.git
