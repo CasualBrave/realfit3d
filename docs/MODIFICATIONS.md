@@ -3,7 +3,16 @@
 維護紀錄：供版本整合、回溯與測試使用。匯入版本與原始檔案雜湊保留於
 `source_manifest.json`；使用方式與模組流程見 README 及 GG 差異說明。
 
-## 2026-10-20：文件與遠端來源查核
+## 2026-10-20：透明度接入
+
+- fork 加入相容既有 V3 權重的 controller；Doll 在 Gaussian 光柵化前套用透明度。
+- lean、turntable、原始 inference 共用 original／direct／optical_depth／v3。
+- 新增參數化的離線 V3 訓練入口，固定 Stage 3，產出控制器及驗證資料，不覆寫既有目錄。
+- RealFit3D 串接 catalog 權重、Web／CLI 參數、轉盤及影片命令，並新增 `offline opacity`。
+- Actor02 既有權重已完成 GPU 渲染測試；完整重訓與 Web 全流程驗收另列於
+  [接入紀錄](OPACITY_INTEGRATION_20261020.md)。
+
+## 2026-10-20：文件與遠端來源查核（接入前）
 
 - 發布首輪整合，固定版本記錄於 `upstream.lock.json`。
 - 在遠端交付定位 V3 程式與 Actor02 controller 檔案，記錄路徑與 SHA256；
@@ -48,7 +57,7 @@
 | 體型擬合、資產準備、fixed-size | 本組模組＋CC 適配 | 合併兩份 fixed-size 前比較 pin 等實際行為 |
 | LBS／ICP 初始化 | 先保留獨立前處理 | 交付腳本在無合格 ICP 候選時的 fallback 與 PDF 描述不同，需對齊 |
 | GG 精簡渲染／烘焙設定 | GG fork 或本組渲染入口 | 保留 baseline 與加速設定，不將低採樣當成同品質 |
-| 透明度 | 可選 controller＋GG renderer 接入 | 核心程式與 Actor02 權重已定位；接入與多層合成待驗證 |
+| 透明度 | controller 訓練＋GG renderer＋Web／CLI | Actor02 兩件衣物渲染已驗證；完整重訓及重疊多層材質案例待驗證 |
 | 固定選項快取 | RealFit3D 主專案 | 待實作跨請求快取與失效條件 |
 
 修改紀錄欄位：來源 repo／檔案／commit、修改目的、行為變更、測試與已知限制。

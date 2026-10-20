@@ -41,6 +41,8 @@ def main(argv=None):
     tryon.add_argument('--upper', required=True)
     tryon.add_argument('--lower', required=True)
     tryon.add_argument('--motion', type=int, default=0)
+    tryon.add_argument('--opacity-mode', choices=['direct', 'optical_depth', 'v3'], default='direct')
+    tryon.add_argument('--opacity-scale', type=float, default=1.0)
     tryon.add_argument('--execute', action='store_true')
     quality = commands.add_parser('quality')
     quality.add_argument('--execute', action='store_true')
@@ -69,7 +71,8 @@ def main(argv=None):
             run_id = 'cli_' + uuid4().hex
             name = outfit_name(upper, lower, args.gender)
             output = Path(settings['output_root'])
-            command = runtime.command(body, upper, lower, motion, run_id, name, output)
+            command = runtime.command(body, upper, lower, motion, run_id, name, output,
+                                      args.opacity_mode, args.opacity_scale)
             missing = [] if args.betas.is_file() else [str(args.betas)]
             plan = dict(stage='tryon', command=command, cwd=str(runtime.path('contourcraft_root')),
                         outputs=[str(output / 'outfits' / name / 'runs_preview' / run_id)], missing=missing,

@@ -2,6 +2,13 @@
 import math
 
 
+def opacity_parameters(mode="direct", scale=1.0):
+    scale = float(scale)
+    if mode not in ("direct", "optical_depth", "v3") or not math.isfinite(scale) or not 0 <= scale <= 1:
+        raise ValueError("Opacity requires direct, optical_depth or v3 and a scale between 0 and 1")
+    return dict(opacity_mode=mode, opacity_scale=scale)
+
+
 def body_parameters(height, weight, gender):
     height, weight = float(height), float(weight)
     if (not math.isfinite(height) or not math.isfinite(weight) or not 1 <= height <= 2.2

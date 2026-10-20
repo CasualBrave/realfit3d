@@ -1,5 +1,8 @@
 # 透明度 V3 訓練與接入紀錄
 
+本文件保留接入前的來源查核。後續實作、GPU 測試與現況見
+[透明度接入紀錄](OPACITY_INTEGRATION_20261020.md)。
+
 維護用，2026-10-20。來源為伺服器交付目錄
 `/home/vtongroup/iismtl5197096_actor1267_delivery_20261020/Gaussian-Garments/`。
 本次只讀文字與計算雜湊，沒有執行遠端程式、載入 checkpoint 或改動遠端檔案。

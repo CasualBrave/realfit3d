@@ -4,10 +4,10 @@
 
 | 路徑 | 已實作 | 驗證界線 |
 |---|---|---|
-| Web → API → CC worker → GG renderer | 共用輸入驗證、命令建構、獨立 Python 環境、資料路徑設定 | CPU／假 runtime／瀏覽器測試通過；無新 GPU 結果 |
-| GG fork | lean、turntable、環境根目錄、trajectory 基本檢查 | GPU 畫質、耗時比較待執行 |
+| Web → API → CC worker → GG renderer | 共用輸入驗證、命令建構、獨立 Python 環境、資料路徑設定及透明參數 | CPU／假 runtime／瀏覽器測試通過；完整人體擬合及模擬流程尚待 GPU 驗收 |
+| GG fork | lean、turntable、環境根目錄、trajectory 檢查及透明控制 | Actor02 上下衣真實 GPU 渲染通過，包含 V3 端點與兩個入口比對 |
 | CC／ActorsHQ | 固定官方 commit；子程序 DEFAULTS 配置 | 不是遠端 dirty checkout 的完整重現 |
-| 離線入口 | prepare、initialize、reconstruct、register-template、register-sequence、appearance、convert、dynamics | 各階段獨立執行；UV 製作與 mask 覆核為人工步驟 |
+| 離線入口 | prepare、initialize、reconstruct、register-template、register-sequence、appearance、opacity、convert、dynamics | 各階段獨立執行；V3 重訓需補齊 Stage 2 訓練資料 |
 | 品質工具 | 8 個 mask／相機／mesh／資料切分工具 | 算法沿用 backend；TSDF 白名單需手動接入，門檻待資料集驗證 |
 | 資產檢查 | 實際消費路徑、可選 SHA256、基本 trajectory 檢查 | 拓撲、人體座標與 checkpoint 相容性需另外核對 |
 
@@ -28,6 +28,10 @@ S1 後先完成 UV seams／unwrap，得到 `stage1/template_uv.obj`，
 再依序執行 register-template、register-sequence、appearance。
 appearance 沿用官方程式內設定，實際執行 5 epochs；
 argparse 的預設值 3 會被程式覆蓋。
+
+需要 V3 的衣物在 appearance 完成後執行可選的 `opacity` 階段。
+已有 controller 的衣物直接匯入，無須重訓。流程與 catalog 設定見
+[透明度指南](OPACITY.zh-TW.md)。
 
 `convert` 呼叫官方 GauGarConverter 產生 Stage4、garment dictionary 與 CC finetune YAML；若已有 Stage4 或同名 YAML，拒絕覆寫。官方 converter 會在 CC 的 configs/finetune 寫入新 YAML，因此執行後需檢查 git status、訓練設定、pin 與資料切分。`dynamics` 執行對應 CC 訓練。Web 的恢復／relax 匯入入口則準備線上試衣資產。
 
@@ -59,9 +63,9 @@ experimental_smplx_pose_transfer 保留為實驗分支，其 ICP fallback 行為
 
 ## 整合工作進度
 
-1. **透明度 V3：程式與權重已定位，接入進行前需完成相容性比對。** 遠端交付包含 SplineOpacityController、推論接入程式及 Actor02 上下衣 controller.pt。Actor01／06／07 使用 direct opacity。路徑與雜湊見 [遠端發現紀錄](REMOTE_DISCOVERY_20261020.md)。
+1. **透明度 V3：已接入 fork、Web 與 CLI。** Actor02 上下衣既有權重已在 GPU 上測試；離線訓練入口已實作，完整重訓待 Stage 2 資料。測試及來源見 [接入紀錄](OPACITY_INTEGRATION_20261020.md)。
 2. **S2／S3：待比對遠端訓練修改。** 交付紀錄列有遠端工作目錄的未提交變更；下一步從交付程式與實際 checkout 產生相對官方基線的 diff，核對啟動參數。
-3. **GPU 驗收：已接通 cvlab-5090-p，完成初步檔案檢查。** 待確認環境與資產後，執行同組輸入的舊／新流程比較。
+3. **GPU 驗收：已在 cvlab-5090-p 完成透明度渲染回歸測試。** 完整 Web 人體擬合、衣物適配與 CC 模擬仍需另外驗收。
 4. **發布：2026-10-20 已推送首輪整合。** GG fork 的程式整合提交為 `8a52dc6`，主專案為 `1a91602`。目前採用版本見 `upstream.lock.json`；更新順序為 GG fork、主專案 gitlink。
 
 來源檔案的 commit 與 SHA256 見 `source_manifest.json`；

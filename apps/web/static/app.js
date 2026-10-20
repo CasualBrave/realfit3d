@@ -204,6 +204,20 @@ function stopTips() {
   if (tipTimer) { clearInterval(tipTimer); tipTimer = null; }
 }
 
+const opacityScale = document.getElementById('opacity-scale');
+const opacityMode = document.getElementById('opacity-mode');
+opacityScale.addEventListener('input', () => {
+  document.getElementById('opacity-value').textContent = Math.round(opacityScale.value * 100) + '%';
+});
+function updateOpacityAvailability() {
+  const selected = ['upper', 'lower'].map(name => form.querySelector(`input[name="${name}"]:checked`));
+  const available = selected.every(input => input && input.dataset.v3 === 'yes');
+  document.getElementById('opacity-v3').disabled = !available;
+  if (!available && opacityMode.value === 'v3') opacityMode.value = 'direct';
+}
+form.addEventListener('change', updateOpacityAvailability);
+updateOpacityAvailability();
+
 form.onsubmit = async (e) => {
   e.preventDefault();
   if (poll) clearInterval(poll);

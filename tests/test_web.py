@@ -136,6 +136,35 @@ class WebTests(unittest.TestCase):
         with self.assertRaises(RuntimeUnavailable):
             PreviewRuntime({}).check()
 
+    def test_opacity_validation_and_command(self):
+        self.fit()
+        for changes in [dict(opacity_scale=s) for s in ('nan', 'inf', '-1', '2', 'x')] + [
+                dict(opacity_mode='unknown'), dict(opacity_mode='v3')]:
+            self.assertEqual(self.generate(**changes).status_code, 400)
+        self.runtime.launch.assert_not_called()
+        self.assertEqual(self.generate(opacity_mode='optical_depth', opacity_scale='.4').status_code, 200)
+        self.assertEqual(self.runtime.command.call_args.kwargs,
+                         dict(opacity_mode='optical_depth', opacity_scale=.4))
+
+    def test_v3_asset_mapping(self):
+        runtime = PreviewRuntime(dict(gg_output_root=str(self.root)))
+        upper = dict(name='upper', opacity_controller='opacity_controller_v3/controller.pt')
+        lower = dict(name='lower', opacity_controller='opacity_controller_v3_valid_cameras/controller.pt')
+        with self.assertRaises(RuntimeUnavailable):
+            runtime.opacity_options(upper, lower, 'v3', .5)
+        for garment in (upper, lower):
+            path = self.root / garment['name'] / garment['opacity_controller']
+            path.parent.mkdir(parents=True)
+            path.touch()
+        options = runtime.opacity_options(upper, lower, 'v3', .5)
+        self.assertEqual(options[:4], ['--opacity-mode', 'v3', '--opacity-scale', '0.5'])
+        self.assertEqual(options[5], f"lower={self.root / 'lower' / lower['opacity_controller']}")
+        self.assertEqual(options[7], f"upper={self.root / 'upper' / upper['opacity_controller']}")
+        with self.assertRaises(ValueError):
+            runtime.opacity_options(dict(name='upper'), lower, 'v3')
+        with self.assertRaises(ValueError):
+            runtime.opacity_options(dict(name='upper', opacity_controller='../escape.pt'), lower, 'v3')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -50,6 +50,11 @@ fork 另檢查 trajectory 的衣物名稱、UV 頂點總數與人體／衣物幀
 | GET `/status/<id>`、`/latest_frame/<id>` | 程序狀態與渲染進度 |
 | GET `/file/<id>/<path>` | 限該次任務中的圖片／影片，拒絕跨目錄與 symlink 逃逸 |
 
+`/generate` 另接受 `opacity_mode`（direct／optical_depth／v3）及
+`opacity_scale`（0–1），預設 direct、1。這組參數同時傳入轉盤與動畫渲染。
+V3 權重由衣物 catalog 指定，兩件衣物都配置後才開放網頁選項。
+設定與訓練流程見 [透明度指南](OPACITY.zh-TW.md)。
+
 鎖與任務表僅在單一程序內有效，不支援多 WSGI worker 或多人服務。無認證、持久化排程、取消或重啟恢復；重啟不會重新認領既有程序，應待 GPU 任務結束後再重啟。body 資料不進 Git；替換／清除會刪除目前人體。程序重啟遺留的人體目錄需自行清理。
 
 新任務不再自動刪除其他試衣結果。請定期檢查 output_root 空間，先確認目錄再清理。Web 不提供任意檔案／pkl 下載，也不接受上傳 pkl。

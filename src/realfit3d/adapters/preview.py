@@ -7,6 +7,7 @@ from pathlib import Path
 
 from realfit3d.settings import runtime_environment
 from realfit3d.assets import inspect_asset
+from realfit3d.contracts import opacity_parameters
 
 WORKERS = Path(__file__).resolve().parents[1] / "workers" / "contourcraft"
 ENTRY = WORKERS.parent / 'runtime_entry.py'
@@ -79,7 +80,25 @@ class PreviewRuntime:
             if not (directory / name).is_file():
                 raise RuntimeError(f"Worker did not produce {name}")
 
-    def command(self, body, upper, lower, motion, run_name, outfit, output):
+    def opacity_options(self, upper, lower, mode="direct", scale=1.0):
+        options = opacity_parameters(mode, scale)
+        arguments = ["--opacity-mode", options["opacity_mode"], "--opacity-scale", str(options["opacity_scale"])]
+        if mode == "v3":
+            for garment in (lower, upper):
+                relative = garment.get("opacity_controller")
+                if not relative:
+                    raise ValueError(f"No V3 controller configured for {garment['name']}")
+                root = self.path("gg_output_root") / garment["name"]
+                path = (root / relative).resolve()
+                if root.resolve() not in path.parents:
+                    raise ValueError("V3 controller must be inside its garment asset directory")
+                if not path.is_file():
+                    raise RuntimeUnavailable(f"Missing V3 controller: {path}")
+                arguments.extend(["--v3-controller", f"{garment['name']}={path}"])
+        return arguments
+
+    def command(self, body, upper, lower, motion, run_name, outfit, output,
+                opacity_mode="direct", opacity_scale=1.0):
         command = [str(self.path("ccraft_python")), str(WORKERS / "run_outfit_preview_pipeline.py"),
                    "--garment-names", lower["name"], upper["name"],
                    "--source-genders", lower["source_gender"], upper["source_gender"],
@@ -91,6 +110,7 @@ class PreviewRuntime:
                    "--pin-waistband-if-snug-garments", lower["name"]]
         for key in ["contourcraft_root", "gaugar_root", "body_model_root", "checkpoint", "ccraft_python", "gaugar_python"]:
             command.extend(["--" + key.replace("_", "-"), str(self.path(key))])
+        command.extend(self.opacity_options(upper, lower, opacity_mode, opacity_scale))
         return self.wrap_cc(command)
 
     def wrap_cc(self, command):

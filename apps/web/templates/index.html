@@ -30,7 +30,7 @@
     <div class="combo-grid">
       {% for i, g in enumerate(uppers) %}
       <label class="combo-card{{ ' selected' if i == 0 else '' }}">
-        <input type="radio" name="upper" value="{{g.name}}"{{ ' checked' if i == 0 else '' }}>
+        <input type="radio" name="upper" value="{{g.name}}" data-v3="{{ 'yes' if g.opacity_controller else 'no' }}"{{ ' checked' if i == 0 else '' }}>
         <img src="/garment_thumbnail/{{g.name}}" alt="{{g.label}}">
       </label>
       {% endfor %}
@@ -39,7 +39,7 @@
     <div class="combo-grid">
       {% for i, g in enumerate(lowers) %}
       <label class="combo-card{{ ' selected' if i == 0 else '' }}">
-        <input type="radio" name="lower" value="{{g.name}}"{{ ' checked' if i == 0 else '' }}>
+        <input type="radio" name="lower" value="{{g.name}}" data-v3="{{ 'yes' if g.opacity_controller else 'no' }}"{{ ' checked' if i == 0 else '' }}>
         <img src="/garment_thumbnail/{{g.name}}" alt="{{g.label}}">
       </label>
       {% endfor %}
@@ -50,6 +50,14 @@
     <select name="motion">
       {% for i, m in enumerate(motions) %}<option value="{{i}}">{{m.label}}</option>{% endfor %}
     </select>
+    <label for="opacity-mode">透明控制</label>
+    <select id="opacity-mode" name="opacity_mode">
+      <option value="direct">直接縮放</option>
+      <option value="optical_depth">光學厚度</option>
+      <option value="v3" id="opacity-v3" disabled>V3 衣物控制器</option>
+    </select>
+    <label for="opacity-scale">不透明度 <output id="opacity-value" for="opacity-scale">100%</output></label>
+    <input id="opacity-scale" name="opacity_scale" type="range" min="0" max="1" step="0.05" value="1">
     <button type="submit">生成</button>
     <button type="button" id="change-body-btn">換人（重新填身體資料）</button>
   </div>

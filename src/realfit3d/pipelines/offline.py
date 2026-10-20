@@ -5,7 +5,7 @@ from pathlib import Path
 from realfit3d.adapters.preview import ENTRY, WORKERS
 
 STAGES = ('prepare', 'initialize', 'reconstruct', 'register-template',
-          'register-sequence', 'appearance', 'convert', 'dynamics')
+          'register-sequence', 'appearance', 'opacity', 'convert', 'dynamics')
 
 
 def identifier(value):
@@ -64,6 +64,15 @@ def build_plan(settings, stage, subject, sequence='Sequence1', gender='male',
         required += [path('actorshq_data_root') / subject / sequence, path('gg_aux_root'), root / 'gs2mesh/gs2mesh_utils']
         command = [str(python), str(ENTRY), '--kind', 'actors', '--root', str(root),
                    '--script', str(root / script), '--', *args]
+    elif stage == 'opacity':
+        root, python = path('gaugar_root'), path('gaugar_python')
+        command = [str(python), str(root / 'train_opacity_v3.py'),
+                   '--subject', subject, '--sequence', sequence]
+        required += [data, output / 'stage1/template_uv.obj', output / 'stage2' / sequence,
+                     output / 'stage3/ckpt/net.pt', path('gg_aux_root')]
+        outputs = [str(output / 'opacity_controller_v3/controller.pt')]
+        notes = ['Trains V3 with frozen Stage 3 weights; requires Stage 2 meshes and AO/normal maps.',
+                 'Default split: training frames 0-29, validation 30-39; existing controllers are never overwritten.']
     elif stage in ('register-template', 'register-sequence', 'appearance'):
         root, python = path('gaugar_root'), path('gaugar_python')
         script = 's3_appearance.py' if stage == 'appearance' else 's2_registration.py'

@@ -13,8 +13,8 @@ Detailed GG changes: [English](upstream/Gaussian-Garments/REALFIT3D_CHANGES.md) 
 
 The local web interface, CLI, and runtime adapters are implemented.
 **End-to-end GPU try-on and training validation are pending.**
-Opacity V3 code and Actor02 controller files have been located in a remote
-delivery; integration is scheduled after source and asset review.
+Opacity controls are connected to Web, CLI, and both GG rendering entries.
+V3 uses a separate controller checkpoint for each garment.
 
 ## Quick Start
 
@@ -48,6 +48,7 @@ Do not execute upstream installation scripts without reviewing them.
 |---|---|
 | GG fork changes, sources, and exclusions | [English](upstream/Gaussian-Garments/REALFIT3D_CHANGES.md) / [Traditional Chinese](upstream/Gaussian-Garments/REALFIT3D_CHANGES.zh-TW.md) |
 | Web configuration, API, and deployment limits | [Web integration](docs/WEB.md) (Traditional Chinese) |
+| Opacity training, asset configuration, and rendering | [English](docs/OPACITY.md) / [Traditional Chinese](docs/OPACITY.zh-TW.md) |
 | Offline stages, CLI, prerequisites, and acceptance gaps | [Integration status](docs/INTEGRATION_STATUS.md) (Traditional Chinese) |
 | Dependency sources and pinned versions | [Upstream dependencies](docs/UPSTREAM.md), [version lock](upstream.lock.json) |
 | Fork/submodule development workflow | [Development](docs/DEVELOPMENT.md) (Traditional Chinese) |

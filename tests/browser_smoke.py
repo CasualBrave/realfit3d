@@ -29,6 +29,18 @@ with sync_playwright() as playwright:
         assert page.locator('.combo-card img').evaluate_all('(images) => images.every(i => i.complete && i.naturalWidth > 0)')
         page.locator('.combo-card').nth(1).click()
         assert page.locator('input[name="upper"]').nth(1).is_checked()
+        assert page.locator('#opacity-v3').is_disabled()
+        page.locator('#opacity-scale').fill('0.4')
+        assert page.locator('#opacity-value').inner_text() == '40%'
+        page.locator('#opacity-mode').select_option('optical_depth')
+        submissions = []
+        def capture_generate(route):
+            submissions.append(route.request.post_data)
+            route.fulfill(status=503, body='GPU smoke test is disabled in this UI test')
+        page.route('**/generate', capture_generate)
+        page.locator('#f button[type="submit"]').click()
+        page.wait_for_function("document.querySelector('#status-sub').textContent.includes('GPU smoke')")
+        assert 'opacity_scale=0.4' in submissions[0] and 'opacity_mode=optical_depth' in submissions[0]
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         page.screenshot(path=f'/tmp/realfit3d-outfit-{width}.png', full_page=True)
         assert not errors, errors

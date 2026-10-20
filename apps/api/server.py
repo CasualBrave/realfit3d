@@ -9,7 +9,7 @@ from flask import Flask, abort, jsonify, render_template, request, send_from_dir
 
 from realfit3d.adapters.preview import PreviewRuntime, RuntimeUnavailable, read_status
 from realfit3d.settings import load_settings
-from realfit3d.contracts import body_parameters, select_outfit, outfit_name
+from realfit3d.contracts import body_parameters, select_outfit, outfit_name, opacity_parameters
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -124,21 +124,28 @@ def create_app(settings=None, runtime=None):
                 return "Create a body first", 400
             try:
                 upper, lower, motion = select_outfit(catalog, request.form.get('upper'), request.form.get('lower'), request.form['motion'])
-            except (KeyError, ValueError):
-                return "Invalid garment selection or motion", 400
+                opacity = opacity_parameters(request.form.get('opacity_mode', 'direct'),
+                                             request.form.get('opacity_scale', '1'))
+                if opacity['opacity_mode'] == 'v3' and not all(g.get('opacity_controller') for g in (upper, lower)):
+                    raise ValueError("Both garments require a configured V3 controller")
+            except (KeyError, ValueError) as exc:
+                return str(exc), 400
             runtime.check(full=True, motion=motion)
             runtime.check_assets([lower['name'], upper['name']])
             outfit = outfit_name(upper, lower, body['gender'])
             run_id = "web_" + uuid4().hex
             directory = output / "outfits" / outfit / "runs_preview" / run_id
             directory.parent.mkdir(parents=True, exist_ok=True)
-            command = runtime.command(body, upper, lower, motion, run_id, outfit, output)
+            try:
+                command = runtime.command(body, upper, lower, motion, run_id, outfit, output, **opacity)
+            except ValueError as exc:
+                return str(exc), 400
             try:
                 process = runtime.launch(command, directory.with_suffix(".log"))
             except OSError:
                 app.logger.exception("Could not launch pipeline")
                 return "Could not launch pipeline; see server log", 500
-            state["runs"][run_id] = {"dir": directory, "process": process}
+            state["runs"][run_id] = {"dir": directory, "process": process, **opacity}
             return jsonify(run_id=run_id)
         finally:
             state["lock"].release()

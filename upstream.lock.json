@@ -5,10 +5,10 @@
       "name": "Gaussian-Garments",
       "path": "upstream/Gaussian-Garments",
       "repository": "https://github.com/CasualBrave/Gaussian-Garments.git",
-      "commit": "a9c70a9c85e32171df41d3ec083bd895690de545",
+      "commit": "0a04dbf7fc4d233b64dce24481148a9cac0f4d28",
       "upstream_repository": "https://github.com/eth-ait/Gaussian-Garments.git",
       "upstream_baseline": "ceb66fc36598da05b3b3391f4562cdc54d2a2ed2",
-      "role": "Team-maintained GG fork: handoff renderers, environment roots, trajectory guards"
+      "role": "Team-maintained GG fork: preview renderers, opacity training/control, environment roots, trajectory guards"
     },
     {
       "name": "ContourCraft",

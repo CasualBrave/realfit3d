@@ -39,6 +39,7 @@ Example:
 import argparse
 import glob
 import json
+import math
 import os
 import pickle
 import shutil
@@ -370,12 +371,19 @@ def simulate(args, fixedsize_dicts_dir: Path, motion_path: Path, n_steps: int, o
     run(sim_cmd)
 
 
+def opacity_arguments(args):
+    arguments = ["--opacity-mode", args.opacity_mode, "--opacity-scale", str(args.opacity_scale)]
+    for mapping in args.v3_controller:
+        arguments.extend(["--v3-controller", mapping])
+    return arguments
+
+
 def render(args, trajectory_path: Path, frames_dir: Path, start_from: int = 0) -> None:
     run([args.gaugar_python, "render_lean.py",
          "--traj_path", str(trajectory_path.resolve()),
          "--output_path", str(frames_dir.resolve()),
          "--start_from", str(start_from),
-         "--bake-samples", str(args.bake_samples)],
+         "--bake-samples", str(args.bake_samples), *opacity_arguments(args)],
         cwd=str(args.gaugar_root), extra_env=RENDER_ENV_EXTRA)
 
 
@@ -394,7 +402,7 @@ def render_turntable(args, trajectory_path: Path, frame_idx: int, output_dir: Pa
          "--output_path", str(output_dir.resolve()),
          "--frame_idx", str(frame_idx),
          "--n-angles", str(n_angles),
-         "--bake-samples", str(args.bake_samples)],
+         "--bake-samples", str(args.bake_samples), *opacity_arguments(args)],
         cwd=str(args.gaugar_root), extra_env=RENDER_ENV_EXTRA)
 
 
@@ -412,6 +420,9 @@ def stitch(args, renders_dir: Path, video_path: Path) -> None:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--opacity-mode", choices=["direct", "optical_depth", "v3"], default="direct")
+    parser.add_argument("--opacity-scale", type=float, default=1.0)
+    parser.add_argument("--v3-controller", action="append", default=[], metavar="GARMENT=PATH")
     parser.add_argument("--garment-names", nargs="+", required=True,
         help="Innermost to outermost, 2+ garments (a fixed catalog combo). Each must match a "
              "Gaussian-Garments output_root/ folder.")
@@ -481,6 +492,10 @@ def main():
         help="Default: gg_outputs_fixedsize/ next to --contourcraft-root -- SAME as the other "
              "fixedsize scripts, deliberately, so the per-garment and per-outfit caches are shared.")
     args = parser.parse_args()
+    if not math.isfinite(args.opacity_scale) or not 0 <= args.opacity_scale <= 1:
+        parser.error("--opacity-scale must be between 0 and 1")
+    if args.v3_controller and args.opacity_mode != "v3":
+        parser.error("--v3-controller requires --opacity-mode v3")
 
     if len(args.garment_names) < 2:
         raise ValueError("--garment-names needs at least 2 garments -- for a single garment this "
