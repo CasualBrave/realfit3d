@@ -1,4 +1,4 @@
-"""Read-only inventory; presence is not proof of model compatibility."""
+"""Inspect configured paths, source revisions, and runtime package availability."""
 import json
 from pathlib import Path
 import subprocess

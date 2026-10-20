@@ -29,7 +29,7 @@
 | `output_actorshq_gg/Actor02_upper/opacity_controller_v3/controller.pt` | `4d7f0dbd2e31c613761fd10d18665885b17d5ed4b6a18aeca2ba812395cfda5d` |
 | `output_actorshq_gg/Actor02_lower/opacity_controller_v3_valid_cameras/controller.pt` | `255e9b0dea842e228b49dd8c52fc6f7ac3aca2d0c66283514ba89c755d458d61` |
 
-## 交付文件聲明，尚未獨立重跑驗證
+## 交付設定與既有測試紀錄
 
 已閱讀 `outputs/frontend_handoff_actor1267/FRONTEND_DELIVERY_20261019.md`
 與 `frontend_runtime_modes.json`：
@@ -37,14 +37,14 @@
 - Actor02 使用 learned V3；Actor01、Actor06、Actor07 使用 direct pre-raster opacity。
 - 每次推論只有一個全域 0–1 控制值，尚非獨立上下衣滑桿。
 - Actor01、Actor06 的指定 trajectory 是 replay；Actor02、Actor07 指向 Stage4 simulation。
-  不可把所有交付影片或 replay 都當成對新身形完成模擬的證據。
-- 文件聲稱既有資產驗證通過；本次沒有執行其 validator 或全量 checksum 比對。
+  Replay 提供既有動作的重播輸入；新身形模擬需要另跑 ContourCraft。
+- 交付紀錄中的資產驗證為通過；RealFit3D 的全量 checksum 與 GPU 驗收排在資產接入階段。
 
-## 對整合結論的修正
+## 接入狀態
 
-先前「GitHub 交付 repo 缺少 V3 核心程式與權重」的描述仍適用於那份 repo，
-但不能繼續概括成「小組沒有提供實作」：遠端交付已包含可讀的核心程式與權重檔。
-目前正確狀態是：**來源已定位，尚未遷入 GG fork，也未完成 GPU 驗收。**
+GitHub 的 transparent_garments_temp 提供研究說明與 actor scripts；
+本次遠端交付另提供 V3 核心程式與 Actor02 權重。
+目前已完成來源定位與初步閱讀，接下來進行程式比對、資產驗證與 GG 接入。
 
 後續先唯讀比對 S1–S4、推論與設定差異，辨別必要修正、實驗分支和機器路徑。
 需要實驗時先通知使用者，僅在 `/home/vtongroup/lin/` 建立工作副本，

@@ -1,51 +1,13 @@
 #!/usr/bin/env python3
-"""Quick, plain-grey-mannequin preview of a fitted body -- no garments, no
-ContourCraft simulation, no Blender/Cycles. For preview_server.py's two-stage
-flow: page 1 fits a body (fit_body_from_measurements_fast.py) and wants to
-show the visitor "here's your body" in a couple seconds, well before any
-garment or motion has been picked.
+"""Render a fitted SMPL-X body before garment selection.
 
-Deliberately NOT reusing render_lean.py/render_turntable.py -- both are built
-around inference.py's Doll/AvatarNet machinery, which assumes at least one
-garment (its Gaussian appearance model is per-garment) and always pays for a
-Blender Cycles texture bake. The body mesh itself is plain SMPL-X geometry
-(confirmed by reading inference.py: the body is a plain trimesh/open3d mesh,
-never touched by AvatarNet), so in principle a lightweight standalone
-renderer should suffice.
+Uses Open3D's CPU RaycastingScene, interpolated vertex normals, two-light
+diffuse shading, and 2x supersampling with Lanczos downsampling. This path
+requires no OpenGL/EGL context or garment appearance model.
 
-Tried Open3D's GPU offscreen renderer (`visualization.rendering.
-OffscreenRenderer`) first, since open3d is already installed in this env --
-confirmed by direct testing that it SEGFAULTS on `render_to_image()` on this
-machine even with zero geometry, i.e. an environment/driver limitation
-(EGL/DRI3 headless GL under WSL2), not a bug in how it was called. First
-fallback was matplotlib's `mplot3d` (flat per-face shading) -- worked, but
-visibly ugly: faceted/moire-looking skin (per-triangle flat color, no
-anti-aliasing, and mplot3d's painter's-algorithm polygon sorting isn't a
-real z-buffer). Replaced with `open3d.t.geometry.RaycastingScene` instead --
-Open3D's CPU-only (Embree-based) ray-triangle intersection engine, no GL/EGL
-context at all, so it can't hit the same environment failure. Casts one ray
-per output pixel (2x supersampled, downsampled with Lanczos for anti-
-aliasing), shades each hit with a per-vertex-normal-interpolated (Phong-
-style, not flat-per-face) two-light diffuse term. Result: smooth, anti-
-aliased, no visible triangulation -- much closer to a real studio product
-shot -- while still ~30ms for the actual ray cast (mesh build dominates at
-~0.7s, model loading). This is the version actually shipped; the matplotlib
-path was fully replaced, not kept as a fallback.
-
-Must run under the ccraft python env (needs smplx), same as
-fit_body_from_measurements_fast.py.
-
-Pose construction duplicates run_outfit_preview_pipeline.py's
-make_display_pose_sequence() logic (not imported -- same "duplicate small
-helpers" convention this project's scripts all follow) with one difference:
-that function corrects an EXISTING motion clip's own frame-0 root_orient to
-face the camera. Here there's no motion clip at all yet (page 1 runs before
-any is picked), so a reference motion file's frame-0 root_orient is borrowed
-purely as a known-good geometric anchor -- see make_display_pose_sequence's
-own docstring for why a bare zero root_orient renders lying on its back
-instead of standing (SMPL-X's raw canonical frame isn't upright in this
-pipeline's convention; every real CMU/AMASS file carries a large near-
-constant correction for this, which is what's being borrowed here).
+Run in the ccraft environment with SMPL-X and Open3D installed. The reference
+motion's first-frame root orientation supplies the upright coordinate frame;
+the renderer corrects its yaw toward the camera and sets a static arm pose.
 
 Usage:
     python render_body_preview.py \\
@@ -66,19 +28,8 @@ from scipy.spatial.transform import Rotation
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-# Deliberately NOT the 78-degree swing make_display_pose_sequence uses for
-# the CLOTHED preview -- that value was tuned to keep a fitted sleeve from
-# clipping into the torso during simulation (see that function's own
-# docstring), which doesn't apply here since there's no garment at all.
-# Measured directly (forward kinematics against a real body): 78 degrees
-# leaves the upper arm only ~5.6 degrees off vertical -- reads as pressed
-# flush against the torso on bare skin, which is exactly what a user
-# reported ("手臂不要緊緊貼著身體") once there was no sleeve bulk to create
-# the illusion of a gap. 55 degrees leaves it ~24 degrees off vertical --
-# a natural "hands resting at the sides with a visible gap" look, still
-# clearly "arms down", not a different pose. SMPL-X body_pose is 21 joints x
-# 3 (axis-angle), flattened to 63; shoulders are joints 15/16 -> flat
-# indices 45:48 / 48:51.
+# Body-only preview uses a 55-degree shoulder swing to leave an arm/torso gap.
+# SMPL-X shoulder joints 15/16 occupy axis-angle slices 45:48 and 48:51.
 SHOULDER_SWING_DEG = 55.0
 # Same fixed permute ccraft's dataloader (datasets/ccraft.py's swap_axes)
 # applies to every vertex after root_orient -- reproduced here so this
@@ -134,9 +85,7 @@ def build_body_mesh(betas_path: Path, body_model_root: Path, reference_motion: P
 
 
 def _vertex_normals(vertices, faces):
-    """Per-vertex normals = average of adjacent face normals, unnormalized
-    sum first then normalize -- standard cheap approximation (no area
-    weighting), good enough at this mesh density for smooth-looking shading."""
+    """Average unit face normals at each vertex, then normalize the sum."""
     tris = vertices[faces]
     face_normals = np.cross(tris[:, 1] - tris[:, 0], tris[:, 2] - tris[:, 0])
     face_normals /= np.linalg.norm(face_normals, axis=1, keepdims=True) + 1e-8
@@ -147,25 +96,10 @@ def _vertex_normals(vertices, faces):
 
 
 def render(vertices, faces, output_image: Path, width=480, height=640, supersample=2):
-    """CPU ray-traced render via open3d.t.geometry.RaycastingScene -- see
-    module docstring for why (Open3D's GPU offscreen renderer segfaults here;
-    a first matplotlib-based attempt worked but looked faceted/aliased).
+    """Render a full-body view with interpolated normals and a checkered floor.
 
-    Casts one ray per (supersampled) output pixel, shades each hit with a
-    per-vertex-normal-interpolated normal (via the hit triangle's barycentric
-    coordinates) rather than the triangle's own flat face normal -- this is
-    what actually removes the faceted look, not just anti-aliasing.
-
-    Camera framing + checkered floor deliberately match the real outfit-
-    preview turntable's look (far-away full-body shot with headroom, floor
-    grid) rather than a tight head-to-toe studio crop -- the user compared
-    this page's body directly against a real generated preview and the tight
-    crop read as "different pose" even though the joint angles are the same
-    (confirmed numerically: the 78-degree shoulder swing below moves the
-    elbow/wrist by the same distance regardless of framing) -- a small
-    figure with visible floor and headroom is just a very different-feeling
-    composition than a cropped close-up, which is what actually needed to
-    match, not the underlying skeleton.
+    Each supersampled pixel casts one ray. Hit barycentric coordinates
+    interpolate vertex normals for smooth diffuse shading.
     """
     vertex_normals = _vertex_normals(vertices, faces)
 
@@ -178,13 +112,7 @@ def render(vertices, faces, output_image: Path, width=480, height=640, supersamp
     center = (vertices.min(0) + vertices.max(0)) / 2
     floor_y = vertices[:, 1].min()
     body_height = vertices[:, 1].max() - floor_y  # Y is up
-    # Aimed slightly above floor level (not straight at chest height) --
-    # this, not the joint angles, is what makes it read as the same style of
-    # shot as the real outfit-preview turntable. Distance/FOV tuned so the
-    # figure fills most of the frame with a little headroom and floor space
-    # left over -- an earlier farther-back version (2.9x/38deg) was
-    # confirmed too small/background-heavy by the user; this is noticeably
-    # tighter while still keeping the full body and some floor in frame.
+    # Scale camera placement by body height, retaining headroom and floor.
     eye = np.array([center[0], floor_y + body_height * 0.95, center[2] + body_height * 1.8])
     look_at = np.array([center[0], floor_y + body_height * 0.55, center[2]])
     world_up = np.array([0.0, 1.0, 0.0])

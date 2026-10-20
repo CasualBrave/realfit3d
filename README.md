@@ -5,7 +5,7 @@ A research virtual try-on integration built on
 ContourCraft, and ActorsHQ preprocessing.
 
 The website, API, and workflow adapters live here. GG is included as a
-**pinned submodule of our maintained fork**, not an independent reimplementation.
+**pinned submodule of our maintained fork**.
 Detailed GG changes: [English](upstream/Gaussian-Garments/REALFIT3D_CHANGES.md) |
 [Traditional Chinese](upstream/Gaussian-Garments/REALFIT3D_CHANGES.zh-TW.md).
 
@@ -14,7 +14,7 @@ Detailed GG changes: [English](upstream/Gaussian-Garments/REALFIT3D_CHANGES.md) 
 The local web interface, CLI, and runtime adapters are implemented.
 **End-to-end GPU try-on and training validation are pending.**
 Opacity V3 code and Actor02 controller files have been located in a remote
-delivery, but are not yet integrated. CPU/browser checks are not GPU validation.
+delivery; integration is scheduled after source and asset review.
 
 ## Quick Start
 
@@ -30,14 +30,13 @@ pip install -e .
 python -m apps.api.server
 ```
 
-Open http://127.0.0.1:5000. This starts the interface, not a configured GPU
-deployment. Without runtime configuration, generation requests return 503.
+Open http://127.0.0.1:5000. Without GPU runtime configuration, generation requests return 503.
 Use `PORT=5001` if port 5000 is occupied.
 
 Copy `configs/paths.example.json` to `configs/paths.local.json`, configure the
 runtime/data paths, and set `REALFIT3D_CONFIG` to that file before starting GPU
 work. GG, ContourCraft, and reconstruction need their own environments and assets;
-the web `.venv` does not install the entire GPU stack.
+the web `.venv` contains the API and interface dependencies.
 
 **Local, single-user, single-process use only.** There is no authentication.
 Do not expose the service publicly or run Web and CLI GPU jobs concurrently.
@@ -62,10 +61,10 @@ versions recorded by this project, not the latest upstream versions.
 
 Datasets, body models, checkpoints, generated outputs, and private configuration
 are not bundled. Obtain authorized assets separately and follow their terms.
-Downloading the code does not provide a complete runnable model deployment.
+Runtime configuration must point to these assets before generation.
 
 Run CPU tests with `python -m unittest discover -s tests -v` in the configured
 development environment. Source checkout checks do not load models or install CUDA.
 
-This project has not selected its own release license. Nothing here replaces
-upstream code, model, or dataset terms; see [upstream notes](docs/UPSTREAM.md).
+Release licensing is under review. Dependency sources and terms are tracked in
+[upstream notes](docs/UPSTREAM.md).

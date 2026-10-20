@@ -18,22 +18,16 @@ instead of the raw ActorsHQ mount, e.g.:
         --gaugar-data-root /path/to/GG_projects/gaugar_data_staging \\
         ... (same --subject/--gaugar-output-root/--output-root as before)
 
-Layout assumption, confirmed by inspecting
-/mnt/d/actorshq_4x/Actor05/Sequence1/smplx/000000.json:
+Supported single-person JSON layout:
     [{"id": 0, "Rh": [[rx,ry,rz]], "Th": [[tx,ty,tz]],
       "poses": [[0,0,0, <63 body_pose>, <3 jaw>, <3 leye>, <3 reye>,
                  <6 left_hand_pca>, <6 right_hand_pca>]],   # 87 total
       "expression": [[<10>]], "shapes": [[<10 betas>]]}]
 The leading 3 zeros in "poses" are a root-rotation placeholder -- the real
 root rotation is "Rh", used separately as global_orient. Only single-person
-frames (one dict per file) are handled; multi-person files raise an error
-rather than silently picking one.
+frames (one dict per file) are handled; multi-person files raise an error.
 
-Only converts ONE sequence at a time (not GauGarConverter._convert_smplx_subject's
-"every subfolder under gaugar_data_root/<subject>/" loop) -- this avoids
-having to also convert every OTHER sequence under Actor05/ (e.g. Sequence2)
-just because it happens to sit next to the one you actually registered in
-GG Stage 2.
+Each invocation converts the selected subject and sequence.
 """
 
 import argparse

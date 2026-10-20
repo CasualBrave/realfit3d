@@ -1,48 +1,21 @@
 #!/usr/bin/env python3
-"""Two-phase preview pipeline for a simple local demo: users pick a garment
-combo + height/weight/motion and get SOMETHING to look at within about a
-minute, instead of staring at a blank screen for the ~4 minutes the full
-short animation actually needs.
+"""Two-phase preview pipeline for a multi-garment outfit.
 
-  Phase 1 (fast, ~1 min): fit body -> rebind each garment -> a tiny
-    --preview-steps simulate -> render its last (settled) frame from
-    --turntable-angles camera angles -> turntable/angle_NNN.png (a frontend
-    can auto-cycle these for a slow-spin preview while Phase 2 runs).
-  Phase 2 (~3-4 min total): REUSES Phase 1's fit-body and rebind output (that
-    work depends only on height/weight/garments, not on how many steps the
-    animation runs, so redoing it would waste ~20s for nothing) -> a real
-    --full-steps simulate -> renders frames one at a time into frames/renders/
-    (status.json's total_frames lets a frontend show a progress bar instead
-    of the frames themselves) -> stitched video.mp4.
+Phase 1 fits the body, rebinds garments, simulates --preview-steps, and
+renders the final preview frame from --turntable-angles cameras.
+Phase 2 reuses the fitted body and rebound garments, simulates --full-steps,
+renders the animation, and assembles video.mp4.
 
-status.json in the run folder is updated at each phase transition so a
-frontend doesn't need to parse logs -- see PHASES below for the exact values.
-
-NEW SCRIPT: does not modify or import from any of the existing
-run_*_pipeline*.py orchestrators. Duplicates their small ensure_garment/
-ensure_outfit cache-check helpers instead of importing them -- same
-convention this project's other orchestrators already follow (none of them
-import from each other either), kept here specifically so nothing about the
-existing pipelines has to change to support this one.
-
-Shares the SAME per-garment recover/relax cache and per-outfit untangle cache
-as run_garment_pipeline_fixedsize(_fast).py / run_multigarment_pipeline_
-fixedsize.py (same --output-root default, gg_outputs_fixedsize/) on purpose:
-pre-running Stage 1-3 once per catalog combo (e.g. via
-run_multigarment_pipeline_fixedsize.py --skip-render --n-steps 1) means this
-script finds that cache already there and never pays for it at demo time.
-Reading/reusing that cache doesn't modify anything either -- it's the same
-on-disk format those scripts already produce and read themselves.
-
-Multi-garment only (2+ --garment-names) -- a single garment doesn't have an
-untangle stage and is already fast enough on its own (run_garment_pipeline_
-fixedsize_fast.py) that this two-phase treatment isn't needed.
+status.json records phase transitions and progress. Per-garment recover/relax
+and per-outfit untangle results are cached under output-root; missing cache
+entries are built there. Use a writable workspace for output-root.
+The pipeline requires at least two --garment-names.
 
 Output layout, under --output-root (default: gg_outputs_fixedsize/, shared
 cache with the other fixedsize scripts):
 
-    <output-root>/<garment-name>/                     per-garment cache (shared, read-only here)
-    <output-root>/_staging_garment_dicts/<outfit>/     untangled outfit (shared, read-only here)
+    <output-root>/<garment-name>/                     per-garment cache
+    <output-root>/_staging_garment_dicts/<outfit>/     untangled outfit cache
     <output-root>/outfits/<outfit-name>/runs_preview/<run-name>/
         status.json                     phase/progress marker, polled by a frontend
         betas.pkl / motion_with_body.npz         shared fit-body output (both phases)
@@ -85,8 +58,7 @@ RENDER_ENV_EXTRA = dict(
     PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True",
 )
 
-# Same WSL2 GPU passthrough flakiness as the other fixedsize pipelines --
-# kept here since this is meant for real (if simple) demo use.
+# Retry failed subprocesses with a fixed delay.
 RETRY_ATTEMPTS = 3
 RETRY_DELAY_SECONDS = 5
 
@@ -253,13 +225,7 @@ def make_run_name(args) -> str:
 
 
 def make_display_pose_sequence(motion_path: Path, output_path: Path) -> None:
-    """Phase 1's preview used to render whatever pose the chosen --motion
-    happens to start on (which, depending on the clip, can look like an
-    arbitrary snapshot mid-motion -- e.g. a walk cycle caught mid-stride --
-    rather than a clean "here's the outfit" reference). This builds a static
-    "standing for a product photo" pose instead, from motion_path (a copy of
-    the fit_body_from_measurements_fast.py output, so it already has the
-    correct target betas patched in), while leaving betas untouched.
+    """Build a static display pose from the fitted motion, preserving betas.
 
     Three things happen, in order:
 
@@ -269,9 +235,8 @@ def make_display_pose_sequence(motion_path: Path, output_path: Path) -> None:
     2. pose_body: a literal zero is SMPL-X's raw T-pose -- confirmed via
        forward kinematics on the zero pose (elbow ~0.27m, wrist ~0.64m offset
        along the body's local left-right axis, near-zero on the other two
-       axes, i.e. dead-horizontal arms). That reads as stiff for a clothing
-       preview (the user's own reaction), so instead swing both upper arms
-       down to the sides -- shoulder joints only (pose_body elements 45:51,
+       axes). Swing both upper arms down to the sides using the shoulder
+       joints (pose_body elements 45:51,
        left/right shoulder in SMPL-X's fixed 21-joint order), no elbow bend,
        landing each straight arm roughly beside the hip.
     3. root_orient/trans: deliberately NOT zeroed -- they're not "pose" in
@@ -288,8 +253,7 @@ def make_display_pose_sequence(motion_path: Path, output_path: Path) -> None:
        Without it, frame 0's heading can point anywhere the source motion
        clip happens to start facing -- e.g. this project's own example clip
        renders as a side profile -- and a horizontal T-pose arm viewed
-       nearly end-on foreshortens into what looks like a raised arm (that
-       was never a separate bug, just this same heading issue).
+       nearly end-on is foreshortened.
 
     The yaw correction has to account for datasets/ccraft.py's swap_axes
     vertex permute: a fixed -90 degree rotation about the raw model's X axis
@@ -470,18 +434,15 @@ def main():
         help="Phase 1: how many simulate steps before rendering the single preview frame. "
              "Small on purpose -- this is a quick settle, not the real animation.")
     parser.add_argument("--full-steps", type=int, default=60,
-        help="Phase 2: the real (short, by design) animation's step count. 60 (with the "
-             "default --discard-frames 10, i.e. 50 rendered frames, ~2.1s at 24fps) is "
-             "expected to push total wall time to roughly 6-6.5 minutes on a 2-garment "
-             "outfit (measured slope: ~3.74s/simulate-step, ~1.4s/render-frame) -- accepted "
-             "tradeoff, not a bug, if you're seeing it.")
+        help="Phase 2 simulation steps. With 60 steps and --discard-frames 10, "
+             "the nominal output is 50 frames (about 2.1 seconds at 24 fps).")
     parser.add_argument("--fps", type=int, default=24)
     parser.add_argument("--discard-frames", type=int, default=10,
         help="Phase 2's full animation: skip rendering this many initial frames (the real "
              "--motion's own unstable cloth-settling start, same reasoning as the other "
              "fixedsize scripts' --discard-frames). trajectory.pkl still holds all "
              "--full-steps frames; only the rendered video shrinks -- with the defaults "
-             "(--full-steps 30, --discard-frames 10) that's 20 rendered frames, ~0.8s at "
+             "(--full-steps 60, --discard-frames 10) that's 50 rendered frames, ~2.1s at "
              "24fps, so raise --full-steps if you want a longer resulting clip.")
     parser.add_argument("--bake-samples", type=int, default=4,
         help="Same meaning as the other fixedsize scripts' --bake-samples -- see their "
@@ -639,10 +600,7 @@ def run_pipeline(args, run_dir: Path, staging_dir: Path, source_trajectory_overr
     trajectory_path = run_dir / "trajectory.pkl"
     simulate(args, fixedsize_dicts_dir, motion_path, args.full_steps, trajectory_path)
 
-    # Read the trajectory back just for its frame count (cheap -- it's already
-    # on disk) rather than hardcoding the simulate_recovered_outfit.py step-
-    # count-to-trajectory-length relationship here, so this can't silently
-    # drift out of sync with however that script actually pads it.
+    # Derive progress from the produced trajectory after discarding warmup frames.
     with trajectory_path.open("rb") as f:
         total_frames = len(pickle.load(f)["pred"]) - args.discard_frames
 

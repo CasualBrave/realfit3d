@@ -1,70 +1,16 @@
 #!/usr/bin/env python3
-"""EXPERIMENTAL alternative to generate_garment_thumbnail.py: render a
-catalog thumbnail straight from the garment's own raw GG capture, instead of
-re-simulating it onto a synthesized/standing body.
+"""Render a catalog thumbnail from an existing garment trajectory.
 
-Why this exists (see conversation, not written down elsewhere): generate_
-garment_thumbnail.py's --use-source-body still runs a full fit_body -> rebind
--> ContourCraft cloth-simulate pipeline, just retargeted onto the garment's
-OWN recovered body shape instead of a synthesized one. That fixed shape-
-retarget distortion, but two things it does NOT fix:
-  1. It's the WRONG use of --hide-body ghost-mannequin compositing for a
-     garment whose hem is naturally open (ankle cuffs, short sleeves, etc.):
-     Doll.render (Gaussian-Garments/inference.py) always punches a hole in
-     the garment layer wherever body should show through (neckline/cuffs/
-     ankles), then composites body_image underneath. --hide-body swaps that
-     to a blank WHITE canvas -- against this project's white thumbnail
-     background, that reads as a torn hole even though nothing is wrong with
-     the garment (confirmed empirically: same "hole" appears when rendering
-     the untouched raw trajectory at frame 0, and completely disappears when
-     the real body is composited in instead of white).
-  2. Any mesh defect already baked into the raw GG reconstruction (checked:
-     there wasn't one for 00176_lower -- 0 non-manifold edges, exactly 3
-     boundary loops at the expected waist+2-ankle locations) would still
-     ride along through fit/rebind/simulate. Re-simulating adds retarget/
-     cloth-dynamics risk for zero benefit when all we want is "what does
-     this garment look like".
+For bootstrap-recovered garments, recovery_metadata selects the source
+trajectory and frame. For official ActorsHQ imports, the default is the last
+frame of <output_root>/<garment_name>/relax_trajectory.pkl.
 
-Insight this script acts on: recover_resize_garment_bootstrap.py's own
---frame (garment_dict.pkl's recovery_metadata: source_trajectory +
-source_frame) IS already a real, physically-settled, artifact-free capture
-of the garment worn on its actual real body -- see this project's own
-gaugar_trajectories/individual-garments/<name>_Take*.pkl. No fit_body, no
-rebind, no ContourCraft cloth-simulate needed at all to look at it: this
-script slices exactly that one frame out of the raw trajectory and renders
-it directly with render_turntable.py, body SHOWN (not --hide-body), which
-sidesteps problem (1) by construction and can't introduce problem (2) since
-nothing touches the mesh between the raw capture and the render.
+Rendering uses render_turntable.py with the SMPL-X body visible. This retains
+body pixels through garment openings instead of compositing white into those
+areas. No new body fitting, rebinding, or cloth simulation is performed.
 
-Trade-off vs. generate_garment_thumbnail.py: the thumbnail shows a grey
-SMPL-X mannequin body wearing the garment (not a pure garment cutout) --
-that's the plain-white-hole workaround. If a pure cutout look is wanted
-later, composite something other than pure white for the hidden-body areas
-instead (a separate, smaller change).
-
-NEW SCRIPT, doesn't modify or import from generate_garment_thumbnail.py or
-any existing orchestrator -- same convention this project's other
-catalog-prep scripts already follow. EXPERIMENTAL: run it against a scratch
---output first and compare against the existing catalog_thumbnails/*.png
-before overwriting anything.
-
-Also supports import_official_gg_garment.py's garments (recovery_metadata.
-source == "official_actorshq_smplx_import", e.g. Actor05): those don't have
-a source_trajectory of already-posed garment frames -- their "source" is raw
-SMPL-X body pose params, not a garment mesh sequence, so there's no frame to
-slice out of a trajectory the way the recover_resize_garment_bootstrap.py
-path works. Instead this reuses <output_root>/<garment_name>/relax_
-trajectory.pkl, which import_official_gg_garment.py already wrote (every
-step of settling the garment onto the posed body, same pred/obstacle/
-cloth_faces/obstacle_faces schema) -- no need to redo SMPL-X forward
-kinematics from smplx_source just to get a body mesh that already exists.
-Uses the LAST relaxation step by default (most settled / fewest collisions,
-see that trajectory's own metrics.ncoll), not frame 0 -- --frame means a
-different thing for this source type, see its own help text.
-
---slot upper/lower additionally crops the render to a modest half-body shot
-(see crop_half_body) -- a single garment on a full standing body leaves the
-OTHER half bare, which looks indecent rather than just incomplete.
+--slot upper/lower crops the image to the selected garment region.
+Use a separate --output when comparing a candidate with existing thumbnails.
 
 Example:
     python generate_garment_thumbnail_from_source.py --garment-name 00176_lower \\

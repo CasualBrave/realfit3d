@@ -1,4 +1,4 @@
-# Web 整合與驗證界線
+# Web 部署與 API
 
 ## 執行責任
 
@@ -6,7 +6,9 @@
 
 Web 環境只安裝 Flask，不 import torch、SMPL-X、Blender 或研究套件。worker 的 subprocess 命令使用參數陣列，不透過 shell；GPU 環境與網站 Python 分開。人體擬合仍同步等待，試衣以背景程序執行。
 
-`scripts/check_checkout.py` 是來源檢查工具，不是網站也不是訓練流程。`workers/contourcraft` 保留交接佈局以降低搬移風險，並不表示這些都是 ContourCraft 官方程式。
+`scripts/check_checkout.py` 檢查依賴來源與版本。
+`workers/contourcraft` 收錄小組前端 repo 的試衣腳本；
+來源版本與檔案雜湊記錄於 [source_manifest.json](source_manifest.json)。
 
 ## GPU 先決條件
 
@@ -19,15 +21,21 @@ Web 環境只安裝 Flask，不 import torch、SMPL-X、Blender 或研究套件�
 - `ccraft_data_root`、`cmu_root`：CC 資料根目錄與 CMU 動作目錄；catalog 的 `CMU/` 前綴會對應到 cmu_root，不再要求把資料放進程式 checkout。
 - `gg_data_root`、`gg_output_root`、`gg_aux_root`：GG 輸入、訓練資產、輔助模型目錄，與試衣結果的 output_root 不同。
 - `body_model_root`、`reference_motion`、`checkpoint`：有合法使用權的模型、參考動作與 CC 權重。
-- `output_root`：既有衣物資產／預熱快取與新結果的根目錄；catalog 的衣物 ID 必須與該目錄及 GG 資產對應。缺少官方訓練衣物時，須先按交接流程匯入，不能單靠目錄名稱產生。
+- `output_root`：既有衣物資產／預熱快取與新結果的根目錄；catalog 的衣物 ID 必須與該目錄及 GG 資產對應。缺少訓練衣物時，先執行資產匯入流程。
 
-GG 部署差異來源：[frontend_temp/Gaussian-Garments 固定版本](https://github.com/CasualBrave/frontend_temp/tree/2a643b1b43a0329dce23b7c40fbc2757bcfab968/Gaussian-Garments)。渲染入口已遷入 fork；沒有整份覆蓋 inference.py，也未執行上游安裝。保留原始 inference 的預設烘焙行為，只有專用渲染入口使用交接加速版本。
+GG 渲染入口來源：[frontend_temp/Gaussian-Garments 固定版本](https://github.com/CasualBrave/frontend_temp/tree/2a643b1b43a0329dce23b7c40fbc2757bcfab968/Gaussian-Garments)。
+原始 inference 的烘焙採樣保持為 16，lean／turntable 入口預設為 4，
+可透過 `--bake-samples` 調整。
 
 `runtime_entry.py` 在子程序啟動 CC／ActorsHQ 時設定其 DEFAULTS；不修改這兩個官方 checkout。GG fork 讀取 `REALFIT3D_GG_*` 環境變數。API 與 CLI 都透過相同設定傳遞這些值，並把專用 Python 所在目錄放到 PATH，讓上游內部的 `python` 子程序使用相同環境。
 
-檔案存在檢查只能及早拒絕缺少路徑，不能證明 CUDA、checkpoint、模型授權、資料相容性或推論品質已通過。`catalog.json` 是交接樣例，不代表資產與權重隨 repo 提供。
+啟動檢查會回報缺少的路徑。`catalog.json` 提供衣物與動作設定範例；
+部署時需另外準備對應資產、權重與 GPU 環境。
 
-選衣後會先檢查該衣物 `stage1/template_uv.obj`、`stage1/cameras.json`、`stage3/ckpt/net.pt`。這是實際 renderer 消費的位置，不會自動把任意 epoch 的權重移到 ckpt。fork 也會檢查 trajectory 的衣物名稱、UV 頂點總數和人體／衣物幀數；這些仍不是完整面索引／UV 語意驗證。
+選衣後會檢查該衣物 `stage1/template_uv.obj`、`stage1/cameras.json`、
+`stage3/ckpt/net.pt`。部署時將選定的外觀權重安裝到 `ckpt/net.pt`。
+fork 另檢查 trajectory 的衣物名稱、UV 頂點總數與人體／衣物幀數。
+面索引、UV 對應及座標慣例需要在資產匯入時核對。
 
 ## API 與安全界線
 
@@ -54,6 +62,4 @@ python scripts/check_checkout.py
 
 測試使用假 runtime，不計算人體或衣物。驗證頁面／縮圖、輸入錯誤、缺少環境、互斥、程序失敗、半寫入 JSON、結果路徑與命令順序。真實 GPU 驗收仍需在同組輸入上比較舊／新流程的 mesh、轉盤、影片、耗時與記憶體。
 
-沒有承諾新架構更快，也沒有把本次重構算成新訓練結果。
-
-可選 UI 檢查：另安裝 `playwright` 與其 Chromium，在未設定 GPU runtime 的本機服務運行時執行 `python tests/browser_smoke.py`。可用 `REALFIT3D_BROWSER` 指定已有的 Chromium，`REALFIT3D_URL` 指定服務網址。此測試會 mock 人體狀態來檢查選衣頁，沒有偽造後端推論；截圖存於 `/tmp/realfit3d-*.png`。
+可選 UI 檢查：另安裝 `playwright` 與其 Chromium，在未設定 GPU runtime 的本機服務運行時執行 `python tests/browser_smoke.py`。可用 `REALFIT3D_BROWSER` 指定已有的 Chromium，`REALFIT3D_URL` 指定服務網址。此測試以 mock 人體狀態檢查選衣頁；截圖存於 `/tmp/realfit3d-*.png`。

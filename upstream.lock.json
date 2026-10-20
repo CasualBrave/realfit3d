@@ -5,7 +5,7 @@
       "name": "Gaussian-Garments",
       "path": "upstream/Gaussian-Garments",
       "repository": "https://github.com/CasualBrave/Gaussian-Garments.git",
-      "commit": "b5a59fdaa6c2e042ae9517df364a03dfe9eb67d1",
+      "commit": "47a1fac111f02a1c71d26116e65d77baa54da916",
       "upstream_repository": "https://github.com/eth-ait/Gaussian-Garments.git",
       "upstream_baseline": "ceb66fc36598da05b3b3391f4562cdc54d2a2ed2",
       "role": "Team-maintained GG fork: handoff renderers, environment roots, trajectory guards"
