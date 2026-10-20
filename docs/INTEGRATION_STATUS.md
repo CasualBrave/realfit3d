@@ -55,10 +55,18 @@ experimental_smplx_pose_transfer 尚未升為預設路徑，其 ICP fallback 與
 1. **透明度 V3：只有文字，沒有核心 code。** 重新 fetch 後，transparent_garments_temp/main 仍為 f706ff4，全部 9 個追蹤檔案只含 Markdown 與 3 個 actor shell scripts。沒有 active/v3/common.py、train.py、evaluate entry 或 checkpoint，沒有其他遠端分支。請提供 V3 程式、設定、相容 Stage3 權重識別與推論範例；不用先整理成完美 package。
 2. **遠端 S2／S3 修改：報告提過，但未附完整 diff。** backend_temp/evidence/ORIGIN_STATE.md 明確記錄 dirty 狀態未嵌入。需要當時 commit 加 diff，或可唯讀檢查的 checkout 路徑。不能把官方原版當作這些修改已重現。
 3. **GPU 驗收：有程式但缺可用部署存取與資產定位。** 本機是 6 GiB RTX 3060，尚無 ccraft／gaugar Conda 環境；首次 SSH 測試停在跳板機 public-key 驗證，尚未檢查遠端目錄。先提供能登入的 SSH 設定及一套已成功跑過的衣物／動作／模型路徑。
-4. **發布：本機有提交，不代表 GitHub 已收到。** 必須先 push GG fork，再 push 主 repo 的 gitlink；目前 GitHub CLI 憑證尚未配置。不要先發布主 repo 去引用尚未上傳的 fork commit。
+4. **發布：2026-10-20 已確認推送成功。** GG fork 的整合提交 `8a52dc6` 與主專案整合提交 `1a91602` 已在 GitHub；後續文件更新另行提交。發布不代表 GPU 驗收或透明度 V3 整合完成。更新時仍須先 push GG fork，再 push 主 repo 的 gitlink。
 
 來源檔案的固定 commit 與 SHA256 見 source_manifest.json。那是來源摘要，不是聲稱修改後檔案仍與來源相同。
 
 ## 下一個 GPU 驗收
+
+### 遠端操作範圍
+
+- 使用者指定 `/home/vtongroup/lin/` 為後續工作目錄；建立前先通知，若已存在先唯讀確認用途，不直接覆寫。
+- 其他既有小組目錄只讀：不修改、搬移、刪除，不在既有 checkout 執行安裝、pull、訓練或實驗腳本。
+- 程式修改與 GitHub push 在本機完成；伺服器僅在 `lin/` 下的獨立 checkout 取得更新，不在伺服器登入使用者的 GitHub。
+- 實驗前檢查所有寫入路徑，包括模型轉換設定、暫存、套件快取、log 與輸出，全部置於 `lin/` 內。不以連到既有目錄的 symlink 作為可寫工作副本。
+- 先唯讀稽核實際程式、版本差異與執行腳本，再決定採用版本。不得僅根據檔名判定算法已整合。
 
 選一組組員已跑通的衣物和動作。先唯讀 inventory、確認環境和授權資料，再執行同一組舊／新命令。比較 garment_names 順序、頂點／面／UV、frame 數、PNG／MP4、耗時與峰值記憶體；記錄 checkpoint 雜湊與完整命令。沒有完成這一步前，不標成「全專案整合完成」。
