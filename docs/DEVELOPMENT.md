@@ -4,6 +4,7 @@
 
 程式修改與遷移歷程記於 [MODIFICATIONS.md](MODIFICATIONS.md)，
 資產查核記於 [REMOTE_DISCOVERY_20261020.md](REMOTE_DISCOVERY_20261020.md)。
+透明度實作查核與接入分工記於 [OPACITY_TRAINING_REVIEW_20261020.md](OPACITY_TRAINING_REVIEW_20261020.md)。
 這些紀錄供開發、測試與回溯使用；README 與功能文件說明使用者可執行的流程。
 
 ## Repository 分工

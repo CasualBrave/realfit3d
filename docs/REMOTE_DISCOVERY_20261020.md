@@ -20,7 +20,7 @@
   controller、subject/normalization 檢查及 pre-raster opacity 控制分支。
   direct 模式則使用 `base_opacity * opacity_scale`。
 - 訓練與評估入口 `train_opacity_controller_v3.py`、
-  `evaluate_opacity_controller_v3.py` 已列出；尚未完整審查其內容。
+  `evaluate_opacity_controller_v3.py` 已閱讀主要流程；詳見後續訓練查核紀錄。
 - Actor02 上衣及下衣的 `controller.pt` 均為存在的普通檔案，已計算雜湊，
   未反序列化，因此尚未驗證權重內容與載入相容性。
 
@@ -48,18 +48,12 @@
 本次遠端交付另提供 V3 核心程式與 Actor02 權重。
 目前已完成來源定位與初步閱讀，接下來進行程式比對、資產驗證與 GG 接入。
 
-### 訓練流程待核對項目
+### 後續訓練查核
 
-- 研究說明記載：固定 Actor02_upper 的 Stage 3 epoch 5 模型，
-  以縮放後的不透明渲染 alpha 作為校準目標，訓練 screen-space opacity controller。
-  這是文件記錄，尚待對照遠端訓練程式的實際 loss 與資料取樣。
-- 遠端交付已列出 `train_opacity_controller_v3.py`、
-  `evaluate_opacity_controller_v3.py`、`run_v3_protocol_experiment.py`、
-  `run_v3_data_efficiency.py`、`evaluate_v3_data_efficiency.py`。
-- 下一次讀取訓練／評估入口，核對凍結參數、loss、相機與影格取樣、
-  優化器、存檔格式，以及現有 checkpoint 對應的命令與設定。
-- 本輪再次連線時 SSH agent 已無載入金鑰；未進行新的遠端讀取。
-  GitHub 交付版本未更新，目前進一步的查核來源仍是伺服器交付包。
+恢復連線後，已閱讀 V3 訓練迴圈、共用資料／渲染函式、不同衣物／相機入口、
+主要評估流程與資料量實驗入口。固定模型、alpha 校準目標、loss、
+取樣與 checkpoint 格式均已從程式確認。
+詳見 [透明度訓練與接入紀錄](OPACITY_TRAINING_REVIEW_20261020.md)。
 
 後續先唯讀比對 S1–S4、推論與設定差異，辨別必要修正、實驗分支和機器路徑。
 需要實驗時先通知使用者，僅在 `/home/vtongroup/lin/` 建立工作副本，
