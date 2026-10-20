@@ -1,5 +1,7 @@
 # 遠端交付初查：2026-10-20
 
+維護紀錄：供程式接入、資產核對與實驗安排使用。
+
 ## 範圍
 
 以使用者授權的 SSH agent 登入 `cvlab-5090-p`，唯讀檢查
@@ -42,9 +44,22 @@
 
 ## 接入狀態
 
-GitHub 的 transparent_garments_temp 提供研究說明與 actor scripts；
+先前的 GitHub 交付提供研究說明與 actor scripts；
 本次遠端交付另提供 V3 核心程式與 Actor02 權重。
 目前已完成來源定位與初步閱讀，接下來進行程式比對、資產驗證與 GG 接入。
+
+### 訓練流程待核對項目
+
+- 研究說明記載：固定 Actor02_upper 的 Stage 3 epoch 5 模型，
+  以縮放後的不透明渲染 alpha 作為校準目標，訓練 screen-space opacity controller。
+  這是文件記錄，尚待對照遠端訓練程式的實際 loss 與資料取樣。
+- 遠端交付已列出 `train_opacity_controller_v3.py`、
+  `evaluate_opacity_controller_v3.py`、`run_v3_protocol_experiment.py`、
+  `run_v3_data_efficiency.py`、`evaluate_v3_data_efficiency.py`。
+- 下一次讀取訓練／評估入口，核對凍結參數、loss、相機與影格取樣、
+  優化器、存檔格式，以及現有 checkpoint 對應的命令與設定。
+- 本輪再次連線時 SSH agent 已無載入金鑰；未進行新的遠端讀取。
+  GitHub 交付版本未更新，目前進一步的查核來源仍是伺服器交付包。
 
 後續先唯讀比對 S1–S4、推論與設定差異，辨別必要修正、實驗分支和機器路徑。
 需要實驗時先通知使用者，僅在 `/home/vtongroup/lin/` 建立工作副本，

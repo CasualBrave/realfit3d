@@ -1,5 +1,8 @@
 # 修改與遷移紀錄
 
+維護紀錄：供版本整合、回溯與測試使用。匯入版本與原始檔案雜湊保留於
+`source_manifest.json`；使用方式與模組流程見 README 及 GG 差異說明。
+
 ## 2026-10-20：文件與遠端來源查核
 
 - 發布首輪整合，固定版本記錄於 `upstream.lock.json`。
@@ -29,7 +32,7 @@
 
 以下記錄第一階段的移入內容；GG 渲染入口與離線 CLI 已在上方的第二階段接入。
 
-- 來源：`CasualBrave/frontend_temp`，commit `2a643b1b43a0329dce23b7c40fbc2757bcfab968`。
+- 整合小組的 Web、試衣 worker 與衣物縮圖。
 - `ContourCraft/preview_server.py` 的 HTML／CSS／JS 拆至 `apps/web/`；API 重組至 `apps/api/server.py`，GPU 命令集中至 `src/realfit3d/adapters/preview.py`。
 - 同目錄其餘 13 個 Python worker 原樣搬至 `src/realfit3d/workers/contourcraft/`，不是新增演算法。衣物縮圖原樣沿用 `ContourCraft/catalog_thumbnails/`；預設 catalog 從 server 常數抽出。
 - 改變行為：以設定檔指定 Python 與資料路徑；原子鎖保護單 GPU 操作；拒絕錯誤 motion index／衣物槽位；監測程序退出；讀取半寫入 status 時重試；限制結果下載為圖片／影片；不再自動清除舊試衣結果；fit 失敗保留原人體；補手機排版。

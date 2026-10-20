@@ -1,5 +1,11 @@
 # 開發與提交流程
 
+## 維護紀錄
+
+程式修改與遷移歷程記於 [MODIFICATIONS.md](MODIFICATIONS.md)，
+資產查核記於 [REMOTE_DISCOVERY_20261020.md](REMOTE_DISCOVERY_20261020.md)。
+這些紀錄供開發、測試與回溯使用；README 與功能文件說明使用者可執行的流程。
+
 ## Repository 分工
 
 在同一個 VS Code 視窗工作即可：主專案管理 Web／流程程式；`upstream/Gaussian-Garments` 管理 GG 內部修改。寫一次程式，但跨 repo 變更需要各自提交。

@@ -7,8 +7,8 @@
 Web 環境只安裝 Flask，不 import torch、SMPL-X、Blender 或研究套件。worker 的 subprocess 命令使用參數陣列，不透過 shell；GPU 環境與網站 Python 分開。人體擬合仍同步等待，試衣以背景程序執行。
 
 `scripts/check_checkout.py` 檢查依賴來源與版本。
-`workers/contourcraft` 收錄小組前端 repo 的試衣腳本；
-來源版本與檔案雜湊記錄於 [source_manifest.json](source_manifest.json)。
+`workers/contourcraft` 執行身形擬合、衣物適配與模擬。
+Adapter 將網頁參數轉為各 worker 的命令，worker 產生的軌跡再交給 GG 渲染。
 
 ## GPU 先決條件
 
@@ -23,9 +23,10 @@ Web 環境只安裝 Flask，不 import torch、SMPL-X、Blender 或研究套件�
 - `body_model_root`、`reference_motion`、`checkpoint`：有合法使用權的模型、參考動作與 CC 權重。
 - `output_root`：既有衣物資產／預熱快取與新結果的根目錄；catalog 的衣物 ID 必須與該目錄及 GG 資產對應。缺少訓練衣物時，先執行資產匯入流程。
 
-GG 渲染入口來源：[frontend_temp/Gaussian-Garments 固定版本](https://github.com/CasualBrave/frontend_temp/tree/2a643b1b43a0329dce23b7c40fbc2757bcfab968/Gaussian-Garments)。
-原始 inference 的烘焙採樣保持為 16，lean／turntable 入口預設為 4，
-可透過 `--bake-samples` 調整。
+GG 先把模擬形狀轉成 UV 遮蔽／法線貼圖，再交給外觀網路和光柵器產生圖片。
+`render_lean.py` 只輸出最終合成影格；`render_turntable.py` 固定一幀、
+更換相機角度，產生網頁多角度預覽。算法與使用方式見
+[GG 渲染說明](../upstream/Gaussian-Garments/REALFIT3D_CHANGES.zh-TW.md)。
 
 `runtime_entry.py` 在子程序啟動 CC／ActorsHQ 時設定其 DEFAULTS；不修改這兩個官方 checkout。GG fork 讀取 `REALFIT3D_GG_*` 環境變數。API 與 CLI 都透過相同設定傳遞這些值，並把專用 Python 所在目錄放到 PATH，讓上游內部的 `python` 子程序使用相同環境。
 

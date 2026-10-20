@@ -52,7 +52,7 @@ python -m realfit3d.cli --config configs/paths.local.json quality --execute audi
 ## Fixed-size 實作選擇
 
 Web／tryon 統一使用前端交接版，包含 fit-aware waistband pin、node_type 重建、
-pin-loop 選項及可選 collision radius。backend_temp 的版本保留作為比較來源。
+pin-loop 選項及可選 collision radius。較早的後端版本保留作為比較來源。
 
 experimental_smplx_pose_transfer 保留為實驗分支，其 ICP fallback 行為待驗證。
 固定身形預計算、跨任務結果快取與鄰近身形加速列入後續開發。
@@ -60,7 +60,7 @@ experimental_smplx_pose_transfer 保留為實驗分支，其 ICP fallback 行為
 ## 整合工作進度
 
 1. **透明度 V3：程式與權重已定位，接入進行前需完成相容性比對。** 遠端交付包含 SplineOpacityController、推論接入程式及 Actor02 上下衣 controller.pt。Actor01／06／07 使用 direct opacity。路徑與雜湊見 [遠端發現紀錄](REMOTE_DISCOVERY_20261020.md)。
-2. **S2／S3：待比對遠端訓練修改。** backend_temp/evidence/ORIGIN_STATE.md 記錄了遠端工作目錄的未提交變更；下一步從交付程式與實際 checkout 產生相對官方基線的 diff，核對啟動參數。
+2. **S2／S3：待比對遠端訓練修改。** 交付紀錄列有遠端工作目錄的未提交變更；下一步從交付程式與實際 checkout 產生相對官方基線的 diff，核對啟動參數。
 3. **GPU 驗收：已接通 cvlab-5090-p，完成初步檔案檢查。** 待確認環境與資產後，執行同組輸入的舊／新流程比較。
 4. **發布：2026-10-20 已推送首輪整合。** GG fork 的程式整合提交為 `8a52dc6`，主專案為 `1a91602`。目前採用版本見 `upstream.lock.json`；更新順序為 GG fork、主專案 gitlink。
 

@@ -22,15 +22,12 @@
 
 ContourCraft 已固定至 `d606432c2f7e96b05664e6a4ffb9d1cb98705baf`；ActorsHQ-for-Gaussian-Garments 已固定至 `46651f55030407ea25463ed070eed9f7e837a9af`，其 GS2Mesh gitlink 為 `b08a68f2b896301472d25fe3f5287b5b1bf1b737`。遠端訓練目錄的未提交修改另列於待比對項目。
 
-小組整合程式來源：
+## 本組模組
 
-| 交接來源 | 本次規劃所依據的版本 | 用途 |
-|---|---|---|
-| `CasualBrave/frontend_temp` | `2a643b1b43a0329dce23b7c40fbc2757bcfab968` | Web、資產準備、人體擬合、fixed-size、預覽流程 |
-| `CasualBrave/backend_temp` | `e5125ed3d0b4ad744f4581e83e6563f7b7152de7` | 訓練 wrappers、品質工具、fixed-size 與交接證據 |
-| `CasualBrave/transparent_garments_temp` | `f706ff4b3667dd21efbdde75613a6a573a58b1ec` | 透明度／Actor 重建說明與 actor scripts |
+Web 與 API 接收身形、衣物和動作選擇，試衣 worker 將條件轉成
+ContourCraft 的輸入並執行模擬，GG 渲染入口再把軌跡轉成圖片與影片。
+品質工具提供 mask、相機對應與 mesh 檢查，用於訓練前準備資產。
 
-已移入的範圍為 Web、試衣 worker、渲染入口與品質工具；來源檔案雜湊見
-[source_manifest.json](source_manifest.json)，修改紀錄見 [MODIFICATIONS.md](MODIFICATIONS.md)。
-V3 程式與 Actor02 權重來自另一份遠端交付，路徑與雜湊見
-[REMOTE_DISCOVERY_20261020.md](REMOTE_DISCOVERY_20261020.md)。
+GG fork 的修改與資料流程見
+[English](../upstream/Gaussian-Garments/REALFIT3D_CHANGES.md) /
+[繁體中文](../upstream/Gaussian-Garments/REALFIT3D_CHANGES.zh-TW.md)。

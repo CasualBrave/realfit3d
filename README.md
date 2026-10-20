@@ -51,8 +51,6 @@ Do not execute upstream installation scripts without reviewing them.
 | Offline stages, CLI, prerequisites, and acceptance gaps | [Integration status](docs/INTEGRATION_STATUS.md) (Traditional Chinese) |
 | Dependency sources and pinned versions | [Upstream dependencies](docs/UPSTREAM.md), [version lock](upstream.lock.json) |
 | Fork/submodule development workflow | [Development](docs/DEVELOPMENT.md) (Traditional Chinese) |
-| Integration history and source provenance | [Modifications](docs/MODIFICATIONS.md), [source manifest](docs/source_manifest.json) |
-| Remote opacity discovery and evidence boundaries | [Discovery record](docs/REMOTE_DISCOVERY_20261020.md) (Traditional Chinese) |
 
 For an existing checkout, `git submodule update --init --recursive` selects the
 versions recorded by this project, not the latest upstream versions.
