@@ -52,9 +52,9 @@ experimental_smplx_pose_transfer 尚未升為預設路徑，其 ICP fallback 與
 
 ## 需要補交的實際項目
 
-1. **透明度 V3：只有文字，沒有核心 code。** 重新 fetch 後，transparent_garments_temp/main 仍為 f706ff4，全部 9 個追蹤檔案只含 Markdown 與 3 個 actor shell scripts。沒有 active/v3/common.py、train.py、evaluate entry 或 checkpoint，沒有其他遠端分支。請提供 V3 程式、設定、相容 Stage3 權重識別與推論範例；不用先整理成完美 package。
+1. **透明度 V3：遠端已找到實作與權重，尚未整合。** 先前 GitHub 交付的 transparent_garments_temp/main（f706ff4）只有說明與 actor scripts；2026-10-20 唯讀登入後，在獨立遠端交付目錄找到並閱讀 SplineOpacityController 與推論接入程式，確認 Actor02 上下衣 controller.pt 存在。尚未反序列化或跑 GPU，其他人物的 direct opacity 不能標為 learned V3。路徑與雜湊見 [遠端發現紀錄](REMOTE_DISCOVERY_20261020.md)。
 2. **遠端 S2／S3 修改：報告提過，但未附完整 diff。** backend_temp/evidence/ORIGIN_STATE.md 明確記錄 dirty 狀態未嵌入。需要當時 commit 加 diff，或可唯讀檢查的 checkout 路徑。不能把官方原版當作這些修改已重現。
-3. **GPU 驗收：有程式但缺可用部署存取與資產定位。** 本機是 6 GiB RTX 3060，尚無 ccraft／gaugar Conda 環境；首次 SSH 測試停在跳板機 public-key 驗證，尚未檢查遠端目錄。先提供能登入的 SSH 設定及一套已成功跑過的衣物／動作／模型路徑。
+3. **GPU 驗收：SSH 已接通，仍未執行。** 2026-10-20 透過使用者在本機解鎖的 SSH agent 成功連到 cvlab-5090-p，完成交付目錄的初步唯讀檢查。尚未確認完整執行環境、資產相容性或跑試衣；既有交付聲稱的驗證結果，不等於 RealFit3D 的 GPU 驗收結果。
 4. **發布：2026-10-20 已確認推送成功。** GG fork 的整合提交 `8a52dc6` 與主專案整合提交 `1a91602` 已在 GitHub；後續文件更新另行提交。發布不代表 GPU 驗收或透明度 V3 整合完成。更新時仍須先 push GG fork，再 push 主 repo 的 gitlink。
 
 來源檔案的固定 commit 與 SHA256 見 source_manifest.json。那是來源摘要，不是聲稱修改後檔案仍與來源相同。
