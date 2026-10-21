@@ -136,8 +136,11 @@ controller 輸入不含相機或當前變形頂點，後續可考慮在固定模
 
 獨立的 config.json、training_summary.json、train_log.csv 與比較結果，
 在本交付目錄深度 6 以內的搜尋中未找到；兩個 controller 目錄只列出 controller.pt。
-如需重現已交付權重的訓練，補齊實際 command、設定／log、
-Stage 3 checkpoint 識別與 Stage 2 訓練資料。程式本身已有，不需要重寫。
+以上是 2026-10-20 查核時的交付範圍。2026-10-21 已補交 Stage 2 mesh、
+AO／normal、點雲與相機清單，逐檔驗證結果見
+[接入紀錄的補件章節](OPACITY_INTEGRATION_20261020.md#stage-2-supplement-2026-10-21)。
+完整重訓仍需適配相機輸入配置；若要重現原 controller 的確切訓練，
+還需對應實際 command、設定／log 與 Stage 3 checkpoint 識別。
 
 ## 7. 本輪閱讀的原始碼版本
 

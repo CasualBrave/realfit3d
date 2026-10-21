@@ -35,5 +35,5 @@ def inspect(settings, probe=False):
             except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
                 results.append(dict(name=key + ':imports', ok=False, error=str(exc)))
     return dict(checks=results, paths_ready=all(r['ok'] for r in results), gpu_parity_verified=False,
-                opacity='blocked: V3 implementation/checkpoint not delivered',
+                opacity='integrated: direct/optical_depth/v3; per-garment controllers and training inputs are not checked',
                 note='Paths/import specs only; no model is loaded, no training or CUDA inference is run.')

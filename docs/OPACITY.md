@@ -79,5 +79,15 @@ rejected. The fork's `train_opacity_v3.py` also provides explicit frame, camera,
 step-count and output-directory options.
 
 Training is an asset preparation step, not a per-user request. Importing an
-already trained controller skips training. Full retraining validation requires
-the Stage 2 assets, which are not part of the Actor02 inference-only delivery.
+already trained controller skips training.
+
+The current training reader expects a camera-name-keyed calibration dictionary
+and camera image directories under `gg_data_root/<subject>/<sequence>`; it reads
+a PNG to determine image dimensions. A Stage 2 rendering-camera list alone does
+not satisfy that input layout.
+
+The 2026-10-21 supplement includes 50 registered meshes, 50 AO maps and 50 normal
+maps per garment, plus Stage 2 point clouds. Actor02 also has full calibration
+and image dimensions in `stage1/cameras.json`. These assets are available, but
+the training reader does not yet consume this image-free delivery layout.
+Full retraining has not been run. Existing-controller inference is unchanged.

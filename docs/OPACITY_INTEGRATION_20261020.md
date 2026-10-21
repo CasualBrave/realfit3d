@@ -75,8 +75,44 @@ values, mode submission, disabled V3 for unconfigured assets, and horizontal ove
   separately from full body fitting and CC simulation. No full Web GPU job has
   been accepted yet.
 - The generalized training entry has CPU data-layout/loss tests and a GPU
-  environment import/help check. Full training requires Actor02 Stage 2 meshes,
-  point clouds, AO/normal maps and camera images, absent from this inference
-  delivery. No replacement controller was trained or published.
+  environment import/help check. Stage 2 assets were added on 2026-10-21 and
+  verified as recorded below. The remaining input-layout issue is camera
+  loading without original image directories. No replacement controller was
+  trained or published.
 - Real overlapping transparent layers and the existing GG visibility/body-depth
   treatment require separate visual cases. The integration keeps that treatment.
+
+## Stage 2 Supplement: 2026-10-21
+
+The delivery now includes `outputs/frontend_handoff_actor1267/STAGE2_SUPPLEMENT_20261021.md`
+and `stage2_supplement_manifest.json`. Read-only verification of every manifest
+entry passed: 1,527 files, 920,091,559 bytes, no missing files or size/hash mismatches.
+Each of Actor01, Actor02 upper/lower, Actor06 upper/lower and Actor07 upper/lower
+has meshes, AO maps and normal maps for exactly frames 0–49. Stage 2 template
+and sequence point-cloud/binding files are also present.
+
+For Actor02, all 50 frames of each garment match its Stage 1 template's vertex
+count, face count and ordered vertex-index faces: upper 7,999 vertices / 15,769
+faces; lower 8,000 / 15,687. AO and normal maps are 512 × 512. This check does not
+establish UV/bake correspondence or rendering parity.
+
+Actor02 `stage1/cameras.json` contains 160 camera-name-keyed calibrations with
+intrinsics, extrinsics and image shapes. Each Stage 2 camera list selects 60
+cameras; all selected names and image dimensions match Stage 1, and focal values
+match within 1e-3 pixels. The Stage 2 lists are rendering metadata, not the
+dictionary format consumed by `TrainingData`.
+
+The delivery contains no raw camera-image input tree. Current `TrainingData`
+still requires camera directories and opens a PNG to obtain dimensions; its
+Stage 2 fallback also expects a dictionary, not the delivered list. Adapting
+that reader to the supplied Stage 1 calibration and selected Stage 2 views is
+the next integration step. V3 alpha calibration does not use RGB pixel values
+as training targets. Stage 3 retraining, in contrast, requires original RGB,
+masks and body inputs.
+
+The four source-code hashes and both Actor02 controller hashes above are
+unchanged. The supplement adds training assets, not a new opacity algorithm.
+Actor06 upper and Actor07 lower retain the Stage 3 overrides in
+`frontend_runtime_modes.json`; their Stage 2 folders do not replace those models.
+Actor08 is not included in this supplement. No GPU workload or remote file write
+was performed during this verification.

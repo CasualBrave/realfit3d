@@ -72,5 +72,13 @@ python -m realfit3d.cli --config configs/paths.local.json offline opacity \
 fork 的 `train_opacity_v3.py` 另提供指定訓練幀、相機、步數及新輸出目錄的參數。
 
 訓練屬於衣物資產準備，不會在每次使用者請求時執行。
-匯入已有控制器的衣物可跳過訓練；完整重訓驗證需要 Stage 2 資料，
-目前 Actor02 的推論交付沒有包含這批訓練資料。
+匯入已有控制器的衣物可跳過訓練。
+
+目前訓練讀取器要求 `gg_data_root/<subject>/<sequence>` 下有以相機名稱為鍵的
+校正字典，以及各相機影像目錄；它會讀取 PNG 取得影像尺寸。
+Stage 2 輸出的渲染相機清單本身不符合這個輸入配置。
+
+2026-10-21 補件已包含每件衣物 50 幀配準 mesh、50 張 AO、50 張 normal，
+以及 Stage 2 點雲。Actor02 的 `stage1/cameras.json` 也有完整校正資料與影像尺寸。
+這些資產已具備，但訓練讀取器尚未支援直接使用這種不含原始影像的交付配置。
+完整重訓尚未執行；既有 controller 的推論方式不變。
