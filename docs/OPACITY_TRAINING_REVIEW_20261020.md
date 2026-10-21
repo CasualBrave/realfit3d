@@ -139,7 +139,8 @@ controller 輸入不含相機或當前變形頂點，後續可考慮在固定模
 以上是 2026-10-20 查核時的交付範圍。2026-10-21 已補交 Stage 2 mesh、
 AO／normal、點雲與相機清單，逐檔驗證結果見
 [接入紀錄的補件章節](OPACITY_INTEGRATION_20261020.md#stage-2-supplement-2026-10-21)。
-完整重訓仍需適配相機輸入配置；若要重現原 controller 的確切訓練，
+GG fork `5c03d7e` 已支援 Stage 1 校正與 Stage 2 視角清單，Actor02 上下衣通過 CPU 相機檢查。
+完整重訓尚未執行；若要重現原 controller 的確切訓練，
 還需對應實際 command、設定／log 與 Stage 3 checkpoint 識別。
 
 ## 7. 本輪閱讀的原始碼版本

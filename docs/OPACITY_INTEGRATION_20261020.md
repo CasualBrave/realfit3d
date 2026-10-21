@@ -67,7 +67,7 @@ with code 0 and all expected images exist; no environment changes were made.
 
 ## Remaining Acceptance
 
-Local checks passed: 34 RealFit3D unit tests, 10 fork controller/training-helper
+Initial 2026-10-20 checks passed: 34 RealFit3D unit tests, 10 fork controller/training-helper
 tests, and Playwright at 1440 x 1000 and 390 x 844. Browser checks cover slider
 values, mode submission, disabled V3 for unconfigured assets, and horizontal overflow.
 
@@ -76,8 +76,8 @@ values, mode submission, disabled V3 for unconfigured assets, and horizontal ove
   been accepted yet.
 - The generalized training entry has CPU data-layout/loss tests and a GPU
   environment import/help check. Stage 2 assets were added on 2026-10-21 and
-  verified as recorded below. The remaining input-layout issue is camera
-  loading without original image directories. No replacement controller was
+  verified as recorded below. Fork `5c03d7e` adds image-free camera loading and
+  passes the Actor02 metadata checks below. No replacement controller was
   trained or published.
 - Real overlapping transparent layers and the existing GG visibility/body-depth
   treatment require separate visual cases. The integration keeps that treatment.
@@ -99,16 +99,14 @@ establish UV/bake correspondence or rendering parity.
 Actor02 `stage1/cameras.json` contains 160 camera-name-keyed calibrations with
 intrinsics, extrinsics and image shapes. Each Stage 2 camera list selects 60
 cameras; all selected names and image dimensions match Stage 1, and focal values
-match within 1e-3 pixels. The Stage 2 lists are rendering metadata, not the
-dictionary format consumed by `TrainingData`.
+match within 1e-3 pixels. The Stage 2 lists are rendering metadata; the full
+calibration dictionary supplies the principal point and world-to-camera transform.
 
-The delivery contains no raw camera-image input tree. Current `TrainingData`
-still requires camera directories and opens a PNG to obtain dimensions; its
-Stage 2 fallback also expects a dictionary, not the delivered list. Adapting
-that reader to the supplied Stage 1 calibration and selected Stage 2 views is
-the next integration step. V3 alpha calibration does not use RGB pixel values
-as training targets. Stage 3 retraining, in contrast, requires original RGB,
-masks and body inputs.
+The delivery contains no raw camera-image input tree. Fork `5c03d7e` reads the
+Stage 1 calibration, including image shapes, and uses the Stage 2 list to select
+views. It checks dimensions, focal lengths and poses before creating training
+cameras. V3 alpha calibration does not use RGB pixel values as training targets.
+Stage 3 retraining, in contrast, requires original RGB, masks and body inputs.
 
 The four source-code hashes and both Actor02 controller hashes above are
 unchanged. The supplement adds training assets, not a new opacity algorithm.
@@ -116,3 +114,26 @@ Actor06 upper and Actor07 lower retain the Stage 3 overrides in
 `frontend_runtime_modes.json`; their Stage 2 folders do not replace those models.
 Actor08 is not included in this supplement. No GPU workload or remote file write
 was performed during this verification.
+
+## Image-Free Camera Reader: 2026-10-21
+
+Implementation: GG fork `5c03d7e9a18a0cc2caaa6a30be24598647714003`.
+The controller architecture, loss, optimizer and checkpoint format are unchanged.
+RealFit3D's offline planner accepts the same image-free asset layout.
+
+Local tests passed: 23 fork tests and 36 RealFit3D tests, including missing
+calibration, duplicate views, mismatched focal lengths/poses/dimensions, legacy
+image inputs and camera construction with a CPU stub. On cvlab-5090-p, the
+CPU-only reader passed for Actor02 upper and lower against the read-only delivery:
+
+- All 60 listed views per garment matched calibration; rotation and camera-center
+  errors passed the absolute 1e-4 tolerance, focal lengths passed 1e-3 pixels.
+- The default eight selected views were Cam005, Cam037, Cam077, Cam110, Cam126,
+  Cam139, Cam149 and Cam160, each with `[height, width] = [1022, 747]`.
+- Both calibration files: `6838e070fb9a64cf420c7de8738ac5005feb0c3918f95512c8add14da53fe150`.
+- Upper view list: `c9fc7ba157622339119c6760ecbb33cd08ef45993585689779e84caccbc5a522`.
+- Lower view list: `48aa512623df9bd4219143a2a789841d13335c0d0975658c33bcbdea52ad28fa`.
+
+Only code clones under `/home/vtongroup/lin/` were updated. The reader did not
+load images, models or CUDA, write to delivery assets, or run training. Full
+controller retraining and end-to-end Web GPU acceptance remain separate tests.

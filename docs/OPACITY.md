@@ -81,13 +81,20 @@ step-count and output-directory options.
 Training is an asset preparation step, not a per-user request. Importing an
 already trained controller skips training.
 
-The current training reader expects a camera-name-keyed calibration dictionary
-and camera image directories under `gg_data_root/<subject>/<sequence>`; it reads
-a PNG to determine image dimensions. A Stage 2 rendering-camera list alone does
-not satisfy that input layout.
+The camera reader takes full calibration from the input sequence, a Stage 2
+calibration dictionary, or Stage 1, in that order. It combines calibration
+with the Stage 2 view list to construct the cameras used for alpha rendering.
+The list supplies the eligible views; the calibration preserves focal lengths,
+principal points, world-to-camera transforms and image dimensions. Conflicting
+dimensions, focal lengths or poses stop training before model loading.
 
-The 2026-10-21 supplement includes 50 registered meshes, 50 AO maps and 50 normal
-maps per garment, plus Stage 2 point clouds. Actor02 also has full calibration
-and image dimensions in `stage1/cameras.json`. These assets are available, but
-the training reader does not yet consume this image-free delivery layout.
-Full retraining has not been run. Existing-controller inference is unchanged.
+When calibration includes `shape: [height, width]` and Stage 2 has a view list,
+the input sequence's RGB directories are not required. Legacy inputs without
+`shape` use PNG/JPEG dimensions. The configured `gg_data_root` and `gg_aux_root`
+must still exist. Calibration and selection hashes are saved with the training
+configuration. See the [CPU camera check](../upstream/Gaussian-Garments/REALFIT3D_CHANGES.md#opacity-control)
+before starting GPU training.
+
+Actor02's 2026-10-21 delivery provides this image-free layout alongside 50 meshes,
+50 AO maps, 50 normal maps and Stage 2 point clouds per garment. Full retraining
+has not been run. Existing-controller inference is unchanged.

@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass
+import json
 import re
 from pathlib import Path
 
@@ -68,10 +69,19 @@ def build_plan(settings, stage, subject, sequence='Sequence1', gender='male',
         root, python = path('gaugar_root'), path('gaugar_python')
         command = [str(python), str(root / 'train_opacity_v3.py'),
                    '--subject', subject, '--sequence', sequence]
-        required += [data, output / 'stage1/template_uv.obj', output / 'stage2' / sequence,
+        required += [path('gg_data_root'), output / 'stage1/template_uv.obj', output / 'stage2' / sequence,
                      output / 'stage3/ckpt/net.pt', path('gg_aux_root')]
+        input_cameras = data / 'cameras.json'
+        stage2_cameras = output / 'stage2' / sequence / 'cameras.json'
+        if input_cameras.is_file():
+            required += [input_cameras]
+        elif stage2_cameras.is_file() and isinstance(json.loads(stage2_cameras.read_text()), dict):
+            required += [stage2_cameras]
+        else:
+            required += [output / 'stage1/cameras.json', stage2_cameras]
         outputs = [str(output / 'opacity_controller_v3/controller.pt')]
         notes = ['Trains V3 with frozen Stage 3 weights; requires Stage 2 meshes and AO/normal maps.',
+                 'Image-free input uses Stage 1 full calibration and the Stage 2 camera list; the reader validates their consistency.',
                  'Default split: training frames 0-29, validation 30-39; existing controllers are never overwritten.']
     elif stage in ('register-template', 'register-sequence', 'appearance'):
         root, python = path('gaugar_root'), path('gaugar_python')

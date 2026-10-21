@@ -7,7 +7,7 @@
 | Web → API → CC worker → GG renderer | 共用輸入驗證、命令建構、獨立 Python 環境、資料路徑設定及透明參數 | CPU／假 runtime／瀏覽器測試通過；完整人體擬合及模擬流程尚待 GPU 驗收 |
 | GG fork | lean、turntable、環境根目錄、trajectory 檢查及透明控制 | Actor02 上下衣真實 GPU 渲染通過，包含 V3 端點與兩個入口比對 |
 | CC／ActorsHQ | 固定官方 commit；子程序 DEFAULTS 配置 | 不是遠端 dirty checkout 的完整重現 |
-| 離線入口 | prepare、initialize、reconstruct、register-template、register-sequence、appearance、opacity、convert、dynamics | Stage 2 補件已驗證；V3 訓練仍需適配交付的相機資料配置，完整重訓尚未執行 |
+| 離線入口 | prepare、initialize、reconstruct、register-template、register-sequence、appearance、opacity、convert、dynamics | V3 已支援不含原始影像的相機配置，Actor02 上下衣通過 CPU 相機檢查；完整重訓尚未執行 |
 | 品質工具 | 8 個 mask／相機／mesh／資料切分工具 | 算法沿用 backend；TSDF 白名單需手動接入，門檻待資料集驗證 |
 | 資產檢查 | 實際消費路徑、可選 SHA256、基本 trajectory 檢查 | 拓撲、人體座標與 checkpoint 相容性需另外核對 |
 
@@ -63,7 +63,7 @@ experimental_smplx_pose_transfer 保留為實驗分支，其 ICP fallback 行為
 
 ## 整合工作進度
 
-1. **透明度 V3：已接入 fork、Web 與 CLI。** Actor02 上下衣既有權重已在 GPU 上測試。2026-10-21 的 1,527 個 Stage 2 補件已通過 SHA256 核對；Actor02 上下衣各有 50 幀 mesh、AO／normal 與點雲，完整相機字典也已存在。訓練入口尚需適配不含原始影像的交付配置，完整重訓未執行。測試及來源見 [接入紀錄](OPACITY_INTEGRATION_20261020.md)。
+1. **透明度 V3：已接入 fork、Web 與 CLI。** Actor02 上下衣既有權重已在 GPU 上測試。2026-10-21 的 1,527 個 Stage 2 補件已通過 SHA256 核對；Actor02 上下衣各有 50 幀 mesh、AO／normal 與點雲。訓練入口已結合 Stage 1 完整校正與 Stage 2 視角清單，不再依賴原始影像取得尺寸；兩件衣物各 60 個視角通過 CPU 一致性檢查。完整重訓未執行。測試及來源見 [接入紀錄](OPACITY_INTEGRATION_20261020.md)。
 2. **S2／S3：待比對遠端訓練修改。** 交付紀錄列有遠端工作目錄的未提交變更；下一步從交付程式與實際 checkout 產生相對官方基線的 diff，核對啟動參數。
 3. **GPU 驗收：已在 cvlab-5090-p 完成透明度渲染回歸測試。** 完整 Web 人體擬合、衣物適配與 CC 模擬仍需另外驗收。
 4. **發布：2026-10-20 已推送首輪整合。** GG fork 的程式整合提交為 `8a52dc6`，主專案為 `1a91602`。目前採用版本見 `upstream.lock.json`；更新順序為 GG fork、主專案 gitlink。

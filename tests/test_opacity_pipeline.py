@@ -1,7 +1,9 @@
 """Verify render command propagation without importing a CUDA runtime."""
 import ast
+import json
 from pathlib import Path
 from types import SimpleNamespace
+import tempfile
 import unittest
 
 from realfit3d.adapters.preview import WORKERS
@@ -34,6 +36,30 @@ class OpacityPipelineTests(unittest.TestCase):
         self.assertIn("--subject", plan["command"])
         self.assertEqual(plan["outputs"],
                          ["/configured/gg_output_root/Actor02_upper/opacity_controller_v3/controller.pt"])
+
+    def test_offline_opacity_accepts_image_free_delivery_paths(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            settings = {key: str(base / key) for key in
+                        ('gaugar_root', 'gaugar_python', 'gg_output_root', 'gg_data_root', 'gg_aux_root')}
+            for key in ('gaugar_root', 'gg_output_root', 'gg_data_root', 'gg_aux_root'):
+                Path(settings[key]).mkdir()
+            Path(settings['gaugar_python']).touch()
+            (Path(settings['gaugar_root']) / 'train_opacity_v3.py').touch()
+            subject = Path(settings['gg_output_root']) / 'shirt'
+            for relative in ('stage1/template_uv.obj', 'stage1/cameras.json',
+                             'stage2/Sequence1/cameras.json', 'stage3/ckpt/net.pt'):
+                target = subject / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text('[]' if relative.startswith('stage2') else '{}')
+            plan = build_plan(settings, 'opacity', 'shirt').describe()
+            self.assertEqual(plan['missing'], [])
+            self.assertFalse((Path(settings['gg_data_root']) / 'shirt').exists())
+            (subject / 'stage1/cameras.json').unlink()
+            self.assertIn(str(subject / 'stage1/cameras.json'),
+                          build_plan(settings, 'opacity', 'shirt').describe()['missing'])
+            (subject / 'stage2/Sequence1/cameras.json').write_text(json.dumps({'Cam001': {}}))
+            self.assertEqual(build_plan(settings, 'opacity', 'shirt').describe()['missing'], [])
 
 
 if __name__ == "__main__":
